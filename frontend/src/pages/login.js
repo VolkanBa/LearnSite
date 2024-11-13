@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
+import '../styles/Darkmoode.css'; // Dark Mode CSS importieren
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -10,33 +11,33 @@ const Login = () => {
     e.preventDefault();
     try {
       const response = await axios.post('http://localhost:5000/api/users/login', { email, password });
-      localStorage.setItem('token', response.data.token); // Speichere das Token
-      alert('login successful!');
+      localStorage.setItem('token', response.data.token); // Token speichern
+      alert('Login erfolgreich!');
     } catch (err) {
-      setError('invalid login');
+      setError('Ungültige Anmeldedaten');
     }
   };
 
   return (
-    <div>
+    <form onSubmit={handleSubmit}>
       <h1>Login</h1>
-      <form onSubmit={handleSubmit}>
-        <input
-          type="email"
-          placeholder="E-Mail"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-        />
-        <input
-          type="password"
-          placeholder="Passwort"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-        />
-        <button type="submit">Login</button>
-      </form>
-      {error && <p style={{ color: 'red' }}>{error}</p>}
-    </div>
+      <input
+        type="email"
+        placeholder="E-Mail"
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+        required
+      />
+      <input
+        type="password"
+        placeholder="Passwort"
+        value={password}
+        onChange={(e) => setPassword(e.target.value)}
+        required
+      />
+      <button type="submit">Login</button>
+      {error && <p className="error-message">{error}</p>}
+    </form>
   );
 };
 

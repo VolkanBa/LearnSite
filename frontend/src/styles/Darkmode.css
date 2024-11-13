@@ -1,0 +1,68 @@
+/* DarkMode.css */
+
+body {
+  background-color: #121212;
+  color: #ffffff;
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+}
+
+form {
+  background-color: #1e1e1e;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.6);
+  width: 100%;
+  max-width: 400px;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+form h1 {
+  color: #ffffff;
+  text-align: center;
+}
+
+input, select {
+  padding: 10px;
+  border: none;
+  border-radius: 5px;
+  background-color: #2e2e2e;
+  color: #ffffff;
+}
+
+input:focus, select:focus {
+  outline: 2px solid #4caf50;
+}
+
+button {
+  padding: 10px;
+  border: none;
+  border-radius: 5px;
+  background-color: #4caf50;
+  color: #ffffff;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+button:hover {
+  background-color: #45a049;
+}
+
+.error-message {
+  color: #ff5555;
+  font-size: 0.9em;
+  text-align: center;
+}
+
+.success-message {
+  color: #4caf50;
+  font-size: 0.9em;
+  text-align: center;
+}

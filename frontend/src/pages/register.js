@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
+import '../styles/Darkmode.css'; // Dark Mode CSS importieren
 
 const Register = () => {
   const [email, setEmail] = useState('');
@@ -20,30 +21,30 @@ const Register = () => {
   };
 
   return (
-    <div>
+    <form onSubmit={handleSubmit}>
       <h1>Registrierung</h1>
-      <form onSubmit={handleSubmit}>
-        <input
-          type="email"
-          placeholder="E-Mail"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-        />
-        <input
-          type="password"
-          placeholder="Passwort"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-        />
-        <select value={role} onChange={(e) => setRole(e.target.value)}>
-          <option value="student">Schüler</option>
-          <option value="teacher">Lehrer</option>
-        </select>
-        <button type="submit">Registrieren</button>
-      </form>
-      {success && <p style={{ color: 'green' }}>{success}</p>}
-      {error && <p style={{ color: 'red' }}>{error}</p>}
-    </div>
+      <input
+        type="email"
+        placeholder="E-Mail"
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+        required
+      />
+      <input
+        type="password"
+        placeholder="Passwort"
+        value={password}
+        onChange={(e) => setPassword(e.target.value)}
+        required
+      />
+      <select value={role} onChange={(e) => setRole(e.target.value)}>
+        <option value="student">Schüler</option>
+        <option value="teacher">Lehrer</option>
+      </select>
+      <button type="submit">Registrieren</button>
+      {success && <p className="success-message">{success}</p>}
+      {error && <p className="error-message">{error}</p>}
+    </form>
   );
 };
 

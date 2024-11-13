@@ -1,0 +1,44 @@
+.dashboard {
+  display: grid;
+  grid-template-columns: 250px 1fr; /* Sidebar (250px) und flexibler Inhalt */
+  height: 100vh;
+  width: 100%;
+  box-sizing: border-box; /* Bezieht Ränder und Padding in die Breite mit ein */
+}
+
+
+.sidebar {
+  background-color: #1e1e1e;
+  padding: 2vw;
+  display: flex;
+  flex-direction: column;
+  gap: 2vh;
+  box-shadow: 2px 0 5px rgba(0, 0, 0, 0.5);
+}
+
+.link {
+  text-decoration: none;
+  color: #4caf50;
+}
+
+.mainContent {
+  padding: 1vw;
+  overflow-y: auto;
+}
+
+.mainHeader {
+  font-size: 1.5em;
+  margin-bottom: 1vw;
+}
+
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(1fr));
+  gap: 1vw;
+}
+
+.card {
+  background-color: #1e1e1e;
+  padding: 0.5vw;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.6);
+}

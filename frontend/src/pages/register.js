@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
-import '../styles/darkmode.css'; // Dark Mode CSS importieren
+import '../styles/register.css'; // Dark Mode CSS importieren
 
 const Register = () => {
   const [email, setEmail] = useState('');

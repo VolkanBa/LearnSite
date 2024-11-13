@@ -1,16 +1,49 @@
 /* DarkMode.css */
 
+.header {
+  display: flex;
+  align-items: center;
+  background-color: #1e1e1e;
+  padding: 10px 20px;
+  border-bottom: 1px solid #4caf50; /* Helle Akzentlinie */
+}
+
+.header img {
+  height: 50px; /* Passe die Höhe deines Logos an */
+  margin-right: 20px;
+}
+
+.header h1 {
+  font-size: 1.5em;
+  color: #ffffff;
+  margin: 0;
+}
+
+.header nav {
+  margin-left: auto;
+}
+
+.header nav a {
+  color: #4caf50;
+  text-decoration: none;
+  margin-left: 15px;
+  font-weight: bold;
+}
+
+.header nav a:hover {
+  text-decoration: underline;
+}
+
 body {
   background-color: #121212;
   color: #ffffff;
   font-family: Arial, sans-serif;
-  margin: 0;
-  padding: 0;
   display: flex;
   justify-content: center;
   align-items: center;
   min-height: 100vh;
 }
+
 
 form {
   background-color: #1e1e1e;
@@ -65,4 +98,17 @@ button:hover {
   color: #4caf50;
   font-size: 0.9em;
   text-align: center;
+}
+
+
+
+@media (max-width: 600px) {
+  .header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .header img {
+    margin-bottom: 10px;
+  }
 }

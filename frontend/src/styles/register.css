@@ -1,14 +1,16 @@
-
 form {
   background-color: #1e1e1e;
-  padding: 20px;
-  border-radius: 10px;
+  position: absolute;
+  left: 35%;
+  top: 22%;
+  padding: 2vw;
+  border-radius: 1.5vw;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.6);
   width: 100%;
-  max-width: 400px;
+  max-width: 25vw;
   display: flex;
   flex-direction: column;
-  gap: 15px;
+  gap: 1vw;
 }
 
 form h1 {
@@ -17,21 +19,22 @@ form h1 {
 }
 
 input, select {
-  padding: 10px;
+  padding: 1vw;
   border: none;
-  border-radius: 5px;
+  border-radius: 0.7vw;
+  font-size: larger;
   background-color: #2e2e2e;
   color: #ffffff;
 }
 
 input:focus, select:focus {
-  outline: 2px solid #4caf50;
+  outline: 0.2vw solid #4caf50;
 }
 
 button {
-  padding: 10px;
+  padding: 1vw;
   border: none;
-  border-radius: 5px;
+  border-radius: 0.7vw;
   background-color: #4caf50;
   color: #ffffff;
   cursor: pointer;

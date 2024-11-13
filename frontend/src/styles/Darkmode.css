@@ -40,5 +40,41 @@ body {
   justify-content: center;
   align-items: center;
   min-height: 100vh;
+
+
+   /* Für den Sternenhimmel */
+   background-image: radial-gradient(2px 2px at 10% 20%, #ffffff, transparent),
+   radial-gradient(1.5px 1.5px at 30% 40%, #ffffff, transparent),
+   radial-gradient(1px 1px at 70% 80%, #ffffff, transparent),
+   radial-gradient(1.5px 1.5px at 50% 10%, #ffffff, transparent),
+   radial-gradient(2px 2px at 80% 50%, #ffffff, transparent),
+   radial-gradient(1px 1px at 40% 60%, #ffffff, transparent),
+   radial-gradient(2px 2px at 60% 30%, #ffffff, transparent),
+   radial-gradient(1.5px 1.5px at 90% 70%, #ffffff, transparent),
+   radial-gradient(2px 2px at 10% 20%, #ffffff, transparent),
+   radial-gradient(1.5px 1.5px at 30% 40%, #ffffff, transparent),
+   radial-gradient(1px 1px at 70% 83%, #ffffff, transparent),
+   radial-gradient(1.5px 1.5px at 50% 10%, #ffffff, transparent),
+   radial-gradient(2px 2px at 83% 90%, #ffffff, transparent),
+   radial-gradient(1px 1px at 43% 60%, #ffffff, transparent),
+   radial-gradient(2px 2px at 60% 30%, #ffffff, transparent),
+   radial-gradient(1.5px 1.5px at 90% 70%, #ffffff, transparent),
+   radial-gradient(1px 1px at 15% 83%, #ffffff, transparent),
+   radial-gradient(1px 1px at 43% 63%, #ffffff, transparent),
+   radial-gradient(2px 2px at 10% 30%, #ffffff, transparent),
+   radial-gradient(1.5px 1.5px at 90% 70%, #ffffff, transparent),
+   radial-gradient(2px 2px at 10% 20%, #ffffff, transparent),
+   radial-gradient(1.5px 1.5px at 30% 40%, #ffffff, transparent),
+   radial-gradient(1px 1px at 55% 23%, #ffffff, transparent),
+   radial-gradient(1.5px 1.5px at 11% 10%, #ffffff, transparent),
+   radial-gradient(2px 2px at 10% 50%, #ffffff, transparent),
+   radial-gradient(1px 1px at 20% 70%, #ffffff, transparent),
+   radial-gradient(2px 2px at 60% 30%, #ffffff, transparent),
+   radial-gradient(1.5px 1.5px at 90% 70%, #ffffff, transparent),
+   radial-gradient(1px 1px at 15% 85%, #ffffff, transparent),
+   radial-gradient(2px 2px at 85% 12%, #ffffff, transparent),
+   radial-gradient(2px 2px at 85% 27%, #ffffff, transparent);
+background-repeat: no-repeat;
+background-size: 100% 100%;
 }
 

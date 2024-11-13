@@ -3,7 +3,7 @@ import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import Login from './pages/login';
 import Register from './pages/register';
 import logo from './styles/LearningSiteLogo.webp';
-import Dashboard from "./pages/dashboard.js";
+import Dashboard from "./pages/dashboard";
 import './styles/darkmode.css'
 
 const App = () => {
@@ -13,7 +13,7 @@ const App = () => {
       <img src={logo} alt="Logo" />
       <h1>LearnSite</h1>
       <nav>
-        <a href="/dashboard">Home</a>
+        <a href="/dashboard">Dashboard</a>
         <a href="/login">Login</a>
         <a href="/register">Register</a>
       </nav>

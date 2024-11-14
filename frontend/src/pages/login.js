@@ -1,43 +1,55 @@
 import React, { useState } from 'react';
-import axios from 'axios';
+import axios from '../api';
 
 const Login = () => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const [error, setError] = useState('');
+    const [success, setSuccess] = useState('');
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    try {
-      const response = await axios.post('http://localhost:5000/api/users/login', { email, password });
-      localStorage.setItem('token', response.data.token); // Token speichern
-      alert('Login erfolgreich!');
-    } catch (err) {
-      setError('Ungültige Anmeldedaten');
-    }
-  };
+    const handleLogin = async (e) => {
+        e.preventDefault();
+        setError('');
+        setSuccess('');
 
-  return (
-    <form onSubmit={handleSubmit}>
-      <h1>Login</h1>
-      <input
-        type="email"
-        placeholder="E-Mail"
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-        required
-      />
-      <input
-        type="password"
-        placeholder="Passwort"
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
-        required
-      />
-      <button type="submit">Login</button>
-      {error && <p className="error-message">{error}</p>}
-    </form>
-  );
+        try {
+            const response = await axios.post('http://localhost:5000/api/login', { email, password });
+
+            // Speichere das Token lokal
+            localStorage.setItem('authToken', response.data.token);
+
+            setSuccess('Erfolgreich eingeloggt!');
+            // Weiterleitung zu einer anderen Seite, z.B. Dashboard
+            window.location.href = '/dashboard';
+        } catch (err) {
+            setError(err.response?.data?.error || 'Fehler beim Login');
+        }
+    };
+
+    return (
+        <div className="login-container">
+            <form onSubmit={handleLogin}>
+                <h1>Login</h1>
+                {error && <p className="error">{error}</p>}
+                {success && <p className="success">{success}</p>}
+                <input
+                    type="email"
+                    placeholder="E-Mail"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                />
+                <input
+                    type="password"
+                    placeholder="Passwort"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                />
+                <button type="submit">Anmelden</button>
+            </form>
+        </div>
+    );
 };
 
 export default Login;

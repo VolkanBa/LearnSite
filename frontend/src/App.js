@@ -1,10 +1,19 @@
 import React from 'react';
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 import Login from './pages/login';
 import Register from './pages/register';
 import logo from './styles/LearningSiteLogo.webp';
-import Dashboard from "./pages/dashboard";
-import './styles/darkmode.css'
+import Dashboard from './pages/dashboard.js';
+import './styles/darkmode.css';
+
+
+// PrivateRoute: Schützt die Routen
+const PrivateRoute = ({ children }) => {
+  const token = localStorage.getItem('authToken'); // Token aus localStorage abrufen
+  return token ? children : <Navigate to="/login" />; // Leitet zur Login-Seite weiter, wenn kein Token vorhanden ist
+};
+
+
 
 const App = () => {
   return (
@@ -20,15 +29,30 @@ const App = () => {
     </header>
 
       <main>
-  
-    <Router>
-      <Routes>
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
-        <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/" element={<Dashboard />} />
-      </Routes>
-    </Router>
+
+      <Router>
+          <Routes>
+              {/* Öffentliche Route: Login */}
+              <Route path="/login" element={<Login />} />
+
+              <Route path="/register" element={<Register />} />
+
+              {/* Geschützte Route: Dashboard */}
+              <Route
+                  path="/dashboard"
+                  element={
+                      <PrivateRoute>
+                          <Dashboard />
+                      </PrivateRoute>
+                  }
+              />
+
+
+
+              {/* Standard-Weiterleitung bei unbekannten Routen
+              <Route path="*" element={<Navigate to="/login" />} /> */}
+          </Routes>
+      </Router>
   
       </main>
     </div>

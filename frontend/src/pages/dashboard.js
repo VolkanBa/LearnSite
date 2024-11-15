@@ -4,7 +4,7 @@ import '../styles/dashboard.module.css';
 
 const Dashboard = () => {
     // Benutzerinformationen
-    const [user, setUser] = useState(null); // Benutzerinformationen speichern
+    const [user/*, setUser*/] = useState(null); // Benutzerinformationen speichern
     const [classrooms, setClassrooms] = useState([]); // Liste der Klassenzimmer
     const [showCreateForm, setShowCreateForm] = useState(false); // Toggle für das Erstellungsformular
     const [newClassroomName, setNewClassroomName] = useState(''); // Name für das neue Klassenzimmer
@@ -16,15 +16,17 @@ const Dashboard = () => {
     useEffect(() => {
         const fetchUser = async () => {
             try {
-                const response = await axios.get('/api/user');
-                setUser(response.data); // Benutzerinformationen speichern
+                const response = await axios.get('/api/user', {
+                    headers: { Authorization: `Bearer ${localStorage.getItem('authToken')}` },
+                });
+                console.log('Benutzer-Daten:', response.data);
             } catch (err) {
-                setErrorMessage('Fehler beim Laden des Benutzers. Bitte einloggen.');
-                localStorage.removeItem('authToken'); // Token entfernen
+                console.error('Fehler beim Abrufen der Benutzerdaten:', err);
+                localStorage.removeItem('authToken'); // Token löschen, wenn ungültig
                 window.location.href = '/login'; // Zur Login-Seite weiterleiten
             }
         };
-
+    
         fetchUser();
     }, []);
 

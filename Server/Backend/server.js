@@ -1,7 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const app = express();
-const userRoutes = require('./routes/userRoutes');
+const userRoutes = require('./routes/userRoutes.js');
 const db = require('./config/db');
 const authMiddleware = require('./controllers/middelware');
 const classroomRoutes = require('./routes/classroomRoutes');
@@ -13,11 +13,6 @@ app.use('/api/classrooms', authMiddleware, classroomRoutes);
 db.query('SELECT 1')
     .then(() => console.log('Database connection succesfull!'))
     .catch((err) => console.error('error while trying to connect to database:', err));
-
-app.use((req, res, next) => {
-  req.user = { id: 1 }; // Setze testweise einen Benutzer mit ID 1
-  next();
-});
 
 
 app.use('/api/users', (req, res, next) => {
@@ -42,4 +37,7 @@ app.use('/api/classrooms', classroomRoutes);
 
 
 app.use('/api/classrooms', authMiddleware);
+
+app.use('/api', userRoutes); // Präfix für die Routen
+
 

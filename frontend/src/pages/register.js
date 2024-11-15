@@ -6,7 +6,7 @@ const Register = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState(''); // Neues State für das zweite Passwort
-  const [role, setRole] = useState('student');
+  const [role/*, setRole*/] = useState('student');
   const [success, setSuccess] = useState('');
   const [error, setError] = useState('');
 

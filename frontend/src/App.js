@@ -10,6 +10,7 @@ import './styles/darkmode.css';
 // PrivateRoute: Schützt die Routen
 const PrivateRoute = ({ children }) => {
   const token = localStorage.getItem('authToken'); // Token aus localStorage abrufen
+  console.log('Token in PrivateRoute:', token);
   return token ? children : <Navigate to="/login" />; // Leitet zur Login-Seite weiter, wenn kein Token vorhanden ist
 };
 
@@ -41,16 +42,18 @@ const App = () => {
               <Route
                   path="/dashboard"
                   element={
-                      <PrivateRoute>
+                       <PrivateRoute>
                           <Dashboard />
-                      </PrivateRoute>
+                       </PrivateRoute>
                   }
               />
 
 
 
-              {/* Standard-Weiterleitung bei unbekannten Routen
-              <Route path="*" element={<Navigate to="/login" />} /> */}
+              {
+              /* Standard-Weiterleitung bei unbekannten Routen */
+             <Route path="*" element={<Navigate to="/login" />} /> 
+             }
           </Routes>
       </Router>
   

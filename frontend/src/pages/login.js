@@ -1,32 +1,33 @@
 import React, { useState } from 'react';
 import axios from '../api';
+
+
 const Login = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
+
     const handleLogin = async (e) => {
-        e.preventDefault();
         e.preventDefault();
         setError('');
         setSuccess('');
-        
+    
         try {
-           
-            const response = await axios.post('http://localhost:5000/api/users/login', { email, password });
-            // Speichere das Token lokal
-            localStorage.setItem('authToken', response.data.token);
-            console.log('Token nach dem Login:', localStorage.getItem('authToken'));
-            console.log('Token:', response.data.token); 
-
-            setSuccess('Erfolgreich eingeloggt!');
-            // Weiterleitung zu einer anderen Seite, z.B. Dashboard
+            const response = await axios.post('/users/login', { email, password });
+    
+            // Token im localStorage speichern
             window.location.href = '/dashboard';
+            localStorage.setItem('authToken', response.data.token);
+    
+            setSuccess('Erfolgreich eingeloggt!');
+            setTimeout(() => {
+                window.location.href = '/dashboard'; // Weiterleitung zum Dashboard
+            }, 1000);
         } catch (err) {
             setError(err.response?.data?.error || 'Fehler beim Login');
         }
     };
-   
 
     return (
         <div className="login-container">

@@ -9,20 +9,20 @@ router.post('/register', register);
 // Login
 router.post('/login', login);
 
-router.get('/user', (req, res) => {
-  const token = req.headers.authorization?.split(' ')[1]; // Token extrahieren
-  if (!token) {
-      return res.status(401).json({ error: 'Token fehlt' });
-  }
+// router.get('/user', (req, res) => {
+//   const token = req.headers.authorization?.split(' ')[1]; // Token extrahieren
+//   if (!token) {
+//       return res.status(401).json({ error: 'Token fehlt' });
+//   }
 
-  try {
-      // JWT-Token überprüfen
-      const decoded = jwt.verify(token, process.env.JWT_SECRET);
-      res.status(200).json({ id: decoded.id, email: 'beispiel@example.com', role: 'student' });
-  } catch (err) {
-      res.status(403).json({ error: 'Ungültiges Token' });
-  }
-});
+//   try {
+//       // JWT-Token überprüfen
+//       const decoded = jwt.verify(token, process.env.JWT_SECRET);
+//       res.status(200).json({ id: decoded.id, email: 'beispiel@example.com', role: 'student' });
+//   } catch (err) {
+//       res.status(403).json({ error: 'Ungültiges Token' });
+//   }
+// });
 
 
 

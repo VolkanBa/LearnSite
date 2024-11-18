@@ -1,9 +1,13 @@
 require('dotenv').config();
 const User = require('../models/User');
-const jwt = require('jsonwebtoken');
+const { v4: uuidv4 } = require('uuid');
 const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 const db = require('../config/db.js');
 
+// Secrets aus der .env-Datei
+const JWT_SECRET = process.env.JWT_SECRET;
+const REFRESH_TOKEN_SECRET = process.env.REFRESH_TOKEN_SECRET;
 
 // Registrierung
 exports.register = async (req, res) => {
@@ -24,32 +28,92 @@ exports.register = async (req, res) => {
   }
 };
 
+// exports.login = async (req, res) => {
+//     const { email, password } = req.body;
+
+//     try {
+//         // Benutzer aus der Datenbank abrufen
+//         const [user] = await db.query('SELECT * FROM users WHERE email = ?', [email]);
+//         if (!user.length) {
+//             return res.status(404).json({ error: 'Benutzer nicht gefunden' });
+//         }
+
+//         // Passwort überprüfen
+//         const isMatch = await bcrypt.compare(password, user[0].password);
+//         if (!isMatch) {
+//             return res.status(401).json({ error: 'Falsches Passwort' });
+//         }
+
+//         // Einzigartiges Refresh Token generieren
+//         const refreshToken = uuidv4();
+
+//         // Refresh Token in der Datenbank speichern
+//         await db.query('UPDATE users SET refresh_token = ? WHERE id = ?', [refreshToken, user[0].id]);
+
+//         // Refresh Token als HTTP-only Cookie setzen
+//         res.cookie('refreshToken', refreshToken, {
+//             httpOnly: true,
+//             secure: process.env.NODE_ENV === 'production', // Nur HTTPS in Produktion
+//             maxAge: 7 * 24 * 60 * 60 * 1000, // 7 Tage
+//         });
+
+//         res.status(200).json({ message: 'Erfolgreich eingeloggt' });
+//     } catch (error) {
+//         console.error('Fehler beim Login:', error);
+//         res.status(500).json({ error: 'Serverfehler beim Login' });
+//     }
+// };
+
+
 exports.login = async (req, res) => {
-  const { email, password } = req.body;
+    const { email, password } = req.body;
 
-  try {
-      // Prüfe, ob die E-Mail in der Datenbank existiert
-      const [user] = await db.query('SELECT * FROM users WHERE email = ?', [email]);
+    try {
+        // Datenbankabfrage für Benutzer
+        const [user] = await db.query('SELECT * FROM users WHERE email = ?', [email]);
+        if (!user.length) {
+            return res.status(404).json({ error: 'Benutzer nicht gefunden!' });
+        }
 
-      if (user.length === 0) {
-          return res.status(404).json({ error: 'Benutzer nicht gefunden!' });
-      }
+        // Passwort-Validierung
+        const isMatch = await bcrypt.compare(password, user[0].password);
+        if (!isMatch) {
+            return res.status(401).json({ error: 'Ungültiges Passwort!' });
+        }
 
-      const userData = user[0]; // Der erste Benutzer aus der Abfrage
+        // Token generieren
+        const token = jwt.sign(
+            { id: user[0].id, role: user[0].role },
+            process.env.JWT_SECRET,
+            { expiresIn: '1h' }
+        );
 
-      // Vergleiche das eingegebene Passwort mit dem gehashten Passwort
-      const isPasswordValid = await bcrypt.compare(password, userData.password);
-      if (!isPasswordValid) {
-          return res.status(401).json({ error: 'Falsches Passwort!' });
-      }
+        // Antwort zurückgeben
+        return res.status(200).json({ token });
+    } catch (err) {
+        console.error('Fehler beim Login:', err);
+        return res.status(500).json({ error: 'Interner Serverfehler' });
+    }
+};
 
-      // Erstelle ein JWT-Token
-      const token = jwt.sign({ id: userData.id, role: userData.role }, process.env.JWT_SECRET, { expiresIn: '1h' });
 
-      // Erfolgreiche Antwort senden
-      res.status(200).json({ message: 'Erfolgreich eingeloggt!', token });
-  } catch (error) {
-      console.error('Fehler beim Login:', error);
-      res.status(500).json({ error: 'Fehler beim Login.' });
-  }
+exports.logout = async (req, res) => {
+    const refreshToken = req.cookies.refreshToken;
+
+    if (!refreshToken) {
+        return res.status(400).json({ error: 'Kein Token vorhanden' });
+    }
+
+    try {
+        // Token in der Datenbank entfernen
+        await db.query('UPDATE users SET refresh_token = NULL WHERE refresh_token = ?', [refreshToken]);
+
+        // Cookie löschen
+        res.clearCookie('refreshToken');
+
+        res.status(200).json({ message: 'Erfolgreich ausgeloggt' });
+    } catch (error) {
+        console.error('Fehler beim Logout:', error);
+        res.status(500).json({ error: 'Serverfehler beim Logout' });
+    }
 };

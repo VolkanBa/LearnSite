@@ -3,8 +3,9 @@ const cors = require('cors');
 const app = express();
 const userRoutes = require('./routes/userRoutes.js');
 const db = require('./config/db');
-const authMiddleware = require('./controllers/middelware');
+const authMiddleware = require('./controllers/middelware.js');
 const classroomRoutes = require('./routes/classroomRoutes');
+
 
 // Geschützte Routen
 app.use('/api/classrooms', authMiddleware, classroomRoutes);
@@ -22,6 +23,11 @@ app.use('/api/users', (req, res, next) => {
 
 // Middleware
 app.use(cors());
+app.use(cors({ origin: 'http://localhost:3000', credentials: true }));
+app.get('/api/user', authMiddleware, (req, res) => {
+  // Nach erfolgreicher Validierung: Zugriff auf Benutzerdaten
+  res.status(200).json({ id: req.user.id, email: 'beispiel@example.com', role: req.user.role });
+});
 app.use(express.json());
 
 // Routen

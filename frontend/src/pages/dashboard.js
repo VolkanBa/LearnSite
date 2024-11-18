@@ -4,29 +4,31 @@ import '../styles/dashboard.module.css';
 
 const Dashboard = () => {
     // Benutzerinformationen
-    const [user/*, setUser*/] = useState(null); // Benutzerinformationen speichern
+    const [user, setUser] = useState(null); // Benutzerinformationen speichern
     const [classrooms, setClassrooms] = useState([]); // Liste der Klassenzimmer
     const [showCreateForm, setShowCreateForm] = useState(false); // Toggle für das Erstellungsformular
     const [newClassroomName, setNewClassroomName] = useState(''); // Name für das neue Klassenzimmer
     const [newClassroomDescription, setNewClassroomDescription] = useState(''); // Beschreibung des neuen Klassenzimmers
     const [successMessage, setSuccessMessage] = useState('');
     const [errorMessage, setErrorMessage] = useState('');
+    const [error, setError] = useState("");
 
     // Benutzerinformationen abrufen
     useEffect(() => {
-        const fetchUser = async () => {
+     const fetchUser = async () => {
             try {
-                const response = await axios.get('/api/user', {
-                    headers: { Authorization: `Bearer ${localStorage.getItem('authToken')}` },
-                });
-                console.log('Benutzer-Daten:', response.data);
+                // Benutzer-Daten mit dem Refresh-Token abrufen
+                const response = await axios.get('/api/user');
+                setUser(response.data); // Benutzerdaten setzen
             } catch (err) {
                 console.error('Fehler beim Abrufen der Benutzerdaten:', err);
-                localStorage.removeItem('authToken'); // Token löschen, wenn ungültig
-                window.location.href = '/login'; // Zur Login-Seite weiterleiten
+                setError('Nicht authentifiziert. Bitte logge dich ein.');
+                setTimeout(() => {
+      //              window.location.href = '/login'; // Zur Login-Seite weiterleiten
+                }, 1000);
             }
         };
-    
+
         fetchUser();
     }, []);
 

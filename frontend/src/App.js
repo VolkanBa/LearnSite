@@ -7,13 +7,10 @@ import Dashboard from './pages/dashboard.js';
 import './styles/darkmode.css';
 
 
-// PrivateRoute: Schützt die Routen
 const PrivateRoute = ({ children }) => {
-  const token = localStorage.getItem('authToken'); // Token aus localStorage abrufen
-  console.log('Token in PrivateRoute:', token);
-  return token ? children : <Navigate to="/login" />; // Leitet zur Login-Seite weiter, wenn kein Token vorhanden ist
+  const isAuthenticated = !!document.cookie.includes('refreshToken'); // Prüfen, ob das Refresh-Token existiert
+  return isAuthenticated ? children : <Navigate to="/login" />;
 };
-
 
 
 const App = () => {

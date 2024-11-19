@@ -8,8 +8,9 @@ import './styles/darkmode.css';
 
 
 const PrivateRoute = ({ children }) => {
-  const isAuthenticated = !!document.cookie.includes('refreshToken'); // Prüfen, ob das Refresh-Token existiert
-  return isAuthenticated ? children : <Navigate to="/login" />;
+   // Prüfen, ob das JWT-Token existiert
+   const isAuthenticated = !!localStorage.getItem('authToken'); 
+   return isAuthenticated ? children : <Navigate to="/login" />;
 };
 
 
@@ -42,9 +43,9 @@ const App = () => {
               <Route
                   path="/dashboard"
                   element={
-                    //   <PrivateRoute>
+                       <PrivateRoute>
                           <Dashboard />
-                      // </PrivateRoute>
+                       </PrivateRoute>
                   }
               />
 
@@ -52,7 +53,7 @@ const App = () => {
 
               {
               /* Standard-Weiterleitung bei unbekannten Routen */
-             //<Route path="*" element={<Navigate to="/login" />} /> 
+             <Route path="*" element={<Navigate to="/login" />} /> 
              }
           </Routes>
       </Router>

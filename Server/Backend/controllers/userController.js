@@ -9,24 +9,28 @@ const db = require('../config/db.js');
 const JWT_SECRET = process.env.JWT_SECRET;
 const REFRESH_TOKEN_SECRET = process.env.REFRESH_TOKEN_SECRET;
 
+
+
+
+
 // Registrierung
-exports.register = async (req, res) => {
-  const { email, password, role } = req.body;
+// exports.register = async (req, res) => {
+//   const { email, password, role } = req.body;
 
-  try {
-      // Passwort hashen
-      const hashedPassword = await bcrypt.hash(password, 10);
+//   try {
+//       // Passwort hashen
+//       const hashedPassword = await bcrypt.hash(password, 10);
 
-      // Benutzer speichern
-      await db.query('INSERT INTO users (email, password, role) VALUES (?, ?, ?)', [email, hashedPassword, role]);
+//       // Benutzer speichern
+//       await db.query('INSERT INTO users (email, password, role) VALUES (?, ?, ?)', [email, hashedPassword, role]);
 
-      // Erfolgreiche Antwort senden
-      res.status(201).json({ message: 'Benutzer erfolgreich registriert!' });
-  } catch (error) {
-      console.error('Fehler bei der Registrierung:', error);
-      res.status(500).json({ error: 'Fehler bei der Registrierung' });
-  }
-};
+//       // Erfolgreiche Antwort senden
+//       res.status(201).json({ message: 'Benutzer erfolgreich registriert!' });
+//   } catch (error) {
+//       console.error('Fehler bei der Registrierung:', error);
+//       res.status(500).json({ error: 'Fehler bei der Registrierung' });
+//   }
+// };
 
 // exports.login = async (req, res) => {
 //     const { email, password } = req.body;
@@ -64,56 +68,87 @@ exports.register = async (req, res) => {
 //     }
 // };
 
+// exports.logout = async (req, res) => {
+//     const refreshToken = req.cookies.refreshToken;
+
+//     if (!refreshToken) {
+//         return res.status(400).json({ error: 'Kein Token vorhanden' });
+//     }
+
+//     try {
+//         // Token in der Datenbank entfernen
+//         await db.query('UPDATE users SET refresh_token = NULL WHERE refresh_token = ?', [refreshToken]);
+
+//         // Cookie löschen
+//         res.clearCookie('refreshToken');
+
+//         res.status(200).json({ message: 'Erfolgreich ausgeloggt' });
+//     } catch (error) {
+//         console.error('Fehler beim Logout:', error);
+//         res.status(500).json({ error: 'Serverfehler beim Logout' });
+//     }
+// };
+
+
+
 
 exports.login = async (req, res) => {
     const { email, password } = req.body;
 
     try {
-        // Datenbankabfrage für Benutzer
-        const [user] = await db.query('SELECT * FROM users WHERE email = ?', [email]);
-        if (!user.length) {
-            return res.status(404).json({ error: 'Benutzer nicht gefunden!' });
-        }
+        const [user] = await User.findByEmail(email);
+        if (!user) return res.status(404).json({ error: 'Benutzer nicht gefunden' });
 
-        // Passwort-Validierung
-        const isMatch = await bcrypt.compare(password, user[0].password);
-        if (!isMatch) {
-            return res.status(401).json({ error: 'Ungültiges Passwort!' });
-        }
+        const isMatch = await bcrypt.compare(password, user.password);
+        if (!isMatch) return res.status(401).json({ error: 'Ungültige Anmeldedaten' });
 
-        // Token generieren
-        const token = jwt.sign(
-            { id: user[0].id, role: user[0].role },
-            process.env.JWT_SECRET,
-            { expiresIn: '1h' }
-        );
+        const token = jwt.sign({ id: user.id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '15m' });
+        const refreshToken = jwt.sign({ id: user.id }, process.env.REFRESH_TOKEN_SECRET, { expiresIn: '7d' });
 
-        // Antwort zurückgeben
-        return res.status(200).json({ token });
+        res.cookie('refreshToken', refreshToken, { httpOnly: true });
+        res.status(200).json({ token });
     } catch (err) {
-        console.error('Fehler beim Login:', err);
-        return res.status(500).json({ error: 'Interner Serverfehler' });
+        console.error(err);
+        res.status(500).json({ error: 'Fehler beim Login' });
+    }
+};
+
+// Registrierung
+exports.register = async (req, res) => {
+    try {
+        const user = await User.create(req.body);
+        res.status(201).json({ message: 'Benutzer registriert', user });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Fehler bei der Registrierung' });
+    }
+};
+
+// Refresh-Token
+exports.refreshToken = (req, res) => {
+    const refreshToken = req.cookies.refreshToken;
+    if (!refreshToken) return res.status(401).json({ error: 'Nicht authentifiziert' });
+
+    try {
+        const decoded = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET);
+        const newToken = jwt.sign({ id: decoded.id }, process.env.JWT_SECRET, { expiresIn: '15m' });
+        res.status(200).json({ token: newToken });
+    } catch (err) {
+        res.status(403).json({ error: 'Ungültiger Refresh-Token' });
     }
 };
 
 
-exports.logout = async (req, res) => {
-    const refreshToken = req.cookies.refreshToken;
 
-    if (!refreshToken) {
-        return res.status(400).json({ error: 'Kein Token vorhanden' });
+exports.getProfile = (req, res) => {
+    const user = req.user; // Benutzerinfo aus dem Token
+    if (!user) {
+        return res.status(404).json({ error: 'Benutzer nicht gefunden' });
     }
 
-    try {
-        // Token in der Datenbank entfernen
-        await db.query('UPDATE users SET refresh_token = NULL WHERE refresh_token = ?', [refreshToken]);
-
-        // Cookie löschen
-        res.clearCookie('refreshToken');
-
-        res.status(200).json({ message: 'Erfolgreich ausgeloggt' });
-    } catch (error) {
-        console.error('Fehler beim Logout:', error);
-        res.status(500).json({ error: 'Serverfehler beim Logout' });
-    }
+    res.status(200).json({
+        id: user.id,
+        email: user.email, // Du kannst dies erweitern, wenn weitere Infos im Token sind
+        role: user.role, // Falls im Token vorhanden
+    });
 };

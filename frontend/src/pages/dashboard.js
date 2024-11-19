@@ -13,24 +13,28 @@ const Dashboard = () => {
     const [errorMessage, setErrorMessage] = useState('');
     const [error, setError] = useState("");
 
-    // Benutzerinformationen abrufen
+    // User Information
     useEffect(() => {
-     const fetchUser = async () => {
-            try {
-                // Benutzer-Daten mit dem Refresh-Token abrufen
-                const response = await axios.get('/api/user');
-                setUser(response.data); // Benutzerdaten setzen
-            } catch (err) {
-                console.error('Fehler beim Abrufen der Benutzerdaten:', err);
-                setError('Nicht authentifiziert. Bitte logge dich ein.');
-                setTimeout(() => {
-      //              window.location.href = '/login'; // Zur Login-Seite weiterleiten
-                }, 1000);
-            }
-        };
-
-        fetchUser();
-    }, []);
+                const fetchProfile = async () => {
+                    const token = localStorage.getItem('authToken');
+                    console.log('Gesendetes Token:', token);
+                    try {
+                        const response = await axios.get('/users/profile', {
+                            headers: { Authorization: `Bearer ${localStorage.getItem('authToken')}` },
+                            
+                        });
+                        console.log('API Antwort:', response.data);
+                        setUser(response.data);
+                        console.log('Benutzerprofil:', response.data);
+                        
+                    } catch (err) {
+                        console.error(err);
+                        window.location.href = '/login';
+                    }
+                };
+           
+                fetchProfile();
+            }, []);
 
     // Klassenzimmer aus dem Backend abrufen
     useEffect(() => {
@@ -130,3 +134,39 @@ const Dashboard = () => {
 };
 
 export default Dashboard;
+
+
+// import React, { useEffect, useState } from 'react';
+// import axios from '../api';
+
+// const Dashboard = () => {
+//     const [user, setUser] = useState(null);
+
+//     useEffect(() => {
+//         const fetchProfile = async () => {
+//             const token = localStorage.getItem('authToken');
+//             console.log('Gesendetes Token:', token);
+//             try {
+//                 const response = await axios.get('/users/profile', {
+//                     headers: { Authorization: `Bearer ${localStorage.getItem('authToken')}` },
+                    
+//                 });
+//                 console.log('API Antwort:', response.data);
+//                 setUser(response.data);
+//                 console.log('Benutzerprofil:', response.data);
+                
+//             } catch (err) {
+//                 console.error(err);
+//                 window.location.href = '/login';
+//             }
+//         };
+   
+//         fetchProfile();
+//     }, []);
+
+//     if (!user) return <p>Lade...</p>;
+
+//     return <h1>Willkommen, {user.email}</h1>;
+// };
+
+// export default Dashboard;

@@ -1,25 +1,29 @@
-const authMiddleware = async (req, res, next) => {
-    const refreshToken = req.cookies.refreshToken; // Token aus dem Cookie abrufen
+const jwt = require('jsonwebtoken');
 
-    if (!refreshToken) {
-        return res.status(401).json({ error: 'Kein Token vorhanden' });
+const authMiddleware = (req, res, next) => {
+
+
+    const authHeader = req.headers.authorization;
+    if (!authHeader) {
+        console.error('Kein Authorization-Header vorhanden');
+        return res.status(401).json({ error: 'Kein Authorization-Header' });
     }
 
-    try {
-        // Überprüfen, ob der Refresh Token in der Datenbank existiert
-        const [user] = await db.query('SELECT * FROM users WHERE refresh_token = ?', [refreshToken]);
-        if (!user.length) {
-            return res.status(403).json({ error: 'Ungültiger Token' });
+    const token = authHeader.split(' ')[1]; // Bearer <token>
+    if (!token) {
+        console.error('Token fehlt im Authorization-Header');
+        return res.status(401).json({ error: 'Token fehlt' });
+    }
+
+    jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
+        if (err) {
+            console.error('Fehler bei der Token-Überprüfung:', err);
+            return res.status(401).json({ error: 'Ungültiges Token' });
         }
 
-        // Benutzerdaten dem Request hinzufügen
-        req.user = { id: user[0].id, email: user[0].email, role: user[0].role };
-        next(); // Weiter zur nächsten Middleware oder Route
-    } catch (error) {
-        console.error('Fehler beim Authentifizieren:', error);
-        res.status(500).json({ error: 'Serverfehler beim Authentifizieren' });
-    }
+        req.user = decoded; // Benutzer-Daten speichern
+        next();
+    });
 };
-
 
 module.exports = authMiddleware;

@@ -28,20 +28,23 @@ const App = () => {
 
       <main>
 
+
       <Router>
           <Routes>
               {/* Öffentliche Route: Login */}
               <Route path="/login" element={<Login />} />
+             
 
+              
               <Route path="/register" element={<Register />} />
 
               {/* Geschützte Route: Dashboard */}
               <Route
                   path="/dashboard"
                   element={
-                       <PrivateRoute>
+                    //   <PrivateRoute>
                           <Dashboard />
-                       </PrivateRoute>
+                      // </PrivateRoute>
                   }
               />
 
@@ -49,7 +52,7 @@ const App = () => {
 
               {
               /* Standard-Weiterleitung bei unbekannten Routen */
-             <Route path="*" element={<Navigate to="/login" />} /> 
+             //<Route path="*" element={<Navigate to="/login" />} /> 
              }
           </Routes>
       </Router>

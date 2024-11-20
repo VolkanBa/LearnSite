@@ -1,4 +1,12 @@
 const jwt = require('jsonwebtoken');
+const express = require('express');
+const cors = require('cors');
+
+const app = express();
+
+app.use(cors()); // Optional: Für Cross-Origin-Requests
+app.use(express.json()); // Um JSON-Daten zu parsen
+app.use(express.urlencoded({ extended: true })); // Für URL-codierte Daten
 
 const authMiddleware = (req, res, next) => {
 

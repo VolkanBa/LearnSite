@@ -7,11 +7,12 @@ const Dashboard = () => {
     const [user, setUser] = useState(null); // Benutzerinformationen speichern
     const [classrooms, setClassrooms] = useState([]); // Liste der Klassenzimmer
     const [showCreateForm, setShowCreateForm] = useState(false); // Toggle für das Erstellungsformular
-    const [newClassroomName, setNewClassroomName] = useState(''); // Name für das neue Klassenzimmer
-    const [newClassroomDescription, setNewClassroomDescription] = useState(''); // Beschreibung des neuen Klassenzimmers
+    const [newClassroomName, setNewClassroomName] = useState('Default'); // Name für das neue Klassenzimmer
+    const [newClassroomDescription, setNewClassroomDescription] = useState('Default'); // Beschreibung des neuen Klassenzimmers
     const [successMessage, setSuccessMessage] = useState('');
     const [errorMessage, setErrorMessage] = useState('');
-    const [error, setError] = useState("");
+    const [error, setError] = useState(""); 
+    const token = localStorage.getItem('authToken');
 
     // User Information
     // useEffect(() => {
@@ -36,22 +37,27 @@ const Dashboard = () => {
     //             fetchProfile();
     //         }, []);
 
-    // Klassenzimmer aus dem Backend abrufen
-    useEffect(() => {
-        if (user) {
-            fetchClassrooms();
-        }
-    }, [user]);
-
-    const fetchClassrooms = async () => {
+    
+     // Klassenzimmer aus dem Backend abrufen
+     const fetchClassrooms = async () => {
         try {
-            const response = await axios.get('/api/classrooms');
+            const response = await axios.get('/classrooms',
+                {
+                    headers: { Authorization: `Bearer ${token}` }, // JWT-Token im Header hinzufügen
+                }
+            );
             setClassrooms(response.data);
+            
         } catch (error) {
             console.error('Fehler beim Abrufen der Klassenzimmer:', error);
             setErrorMessage('Fehler beim Abrufen der Klassenzimmer.');
         }
     };
+
+    // Klassenzimmer beim Mounten abrufen
+    useEffect(() => {
+        fetchClassrooms();
+    }, []);
 
     // Neues Klassenzimmer erstellen
     const handleCreateClassroom = async (e) => {
@@ -60,79 +66,99 @@ const Dashboard = () => {
         setSuccessMessage('');
 
         try {
-            await axios.post('/api/classrooms/create', {
+            
+           
+
+            // Neues Klassenzimmer erstellen
+            await axios.post('/classrooms/create', {
                 name: newClassroomName,
                 description: newClassroomDescription,
-            });
+            },
+            {
+                headers: { Authorization: `Bearer ${token}` }, // JWT-Token im Header hinzufügen
+            }
+
+        )
+
+        
             setSuccessMessage('Klassenzimmer erfolgreich erstellt!');
             setShowCreateForm(false); // Formular schließen
-            fetchClassrooms(); // Klassenzimmerliste aktualisieren
+            fetchClassrooms(); // Aktualisiere die Klassenzimmerliste
         } catch (error) {
             console.error('Fehler beim Erstellen des Klassenzimmers:', error);
-            setErrorMessage(error.response?.data?.error || 'Fehler beim Erstellen des Klassenzimmers.');
+            setErrorMessage('Fehler beim Erstellen des Klassenzimmers.');
         }
     };
 
     // UI für das Erstellungsformular
-    const renderCreateForm = () => (
-        <div className="create-classroom-form">
-            <form onSubmit={handleCreateClassroom}>
-                <h2>Neues Klassenzimmer erstellen</h2>
-                <input
-                    type="text"
-                    placeholder="Name des Klassenzimmers"
-                    value={newClassroomName}
-                    onChange={(e) => setNewClassroomName(e.target.value)}
-                    required
-                />
-                <textarea
-                    placeholder="Beschreibung des Klassenzimmers"
-                    value={newClassroomDescription}
-                    onChange={(e) => setNewClassroomDescription(e.target.value)}
-                    required
-                ></textarea>
-                <button type="submit">Erstellen</button>
-                <button type="button" className="cancel-button" onClick={() => setShowCreateForm(false)}>
-                    Abbrechen
-                </button>
-            </form>
-        </div>
-    );
+    // const renderCreateForm = () => (
+    //     <div className="create-classroom-form">
+    //         <form onSubmit={handleCreateClassroom}>
+    //             <h2>Neues Klassenzimmer erstellen</h2>
+    //             <input
+    //                 type="text"
+    //                 placeholder="Name des Klassenzimmers"
+    //                 value={newClassroomName}
+    //                 onChange={(e) => setNewClassroomName(e.target.value)}
+    //                 required
+    //             />
+    //             <textarea
+    //                 placeholder="Beschreibung des Klassenzimmers"
+    //                 value={newClassroomDescription}
+    //                 onChange={(e) => setNewClassroomDescription(e.target.value)}
+    //                 required
+    //             ></textarea>
+    //             <button type="submit">Erstellen</button>
+    //             <button type="button" className="cancel-button" onClick={() => setShowCreateForm(false)}>
+    //                 Abbrechen
+    //             </button>
+    //         </form>
+    //     </div>
+    // );
 
     return (
-        <div className="dashboard">
-            {errorMessage && <p className="error-message">{errorMessage}</p>}
-            {successMessage && <p className="success-message">{successMessage}</p>}
+        <div>
+            <h1>Meine Klassenzimmer</h1>
+            {successMessage && <p style={{ color: 'green' }}>{successMessage}</p>}
+            {errorMessage && <p style={{ color: 'red' }}>{errorMessage}</p>}
 
-            {user && <h1>Willkommen, {user.name}!</h1>}
+            <button onClick={() => setShowCreateForm(!showCreateForm)}>
+                {showCreateForm ? 'Formular schließen' : 'Klassenzimmer erstellen'}
+            </button>
 
-            {classrooms.length === 0 && !showCreateForm ? (
-                <div className="empty-state">
-                    <h1>Classroom erstellen</h1>
-                    <button onClick={() => setShowCreateForm(true)}>Jetzt erstellen</button>
-                </div>
-            ) : (
-                <>
-                    <div className="header">
-                        <h1>Meine Klassenzimmer</h1>
-                        <button className="add-button" onClick={() => setShowCreateForm(true)}>+</button>
-                    </div>
-                    <div className="classroom-grid">
-                        {classrooms.map((classroom) => (
-                            <div key={classroom.id} className="classroom-card">
-                                <h2>{classroom.name}</h2>
-                                <p>{classroom.description}</p>
-                            </div>
-                        ))}
-                    </div>
-                </>
+            {showCreateForm && (
+                <form onSubmit={handleCreateClassroom}>
+                    <input
+                        type="text"
+                        placeholder="Name des Klassenzimmers"
+                        value={newClassroomName}
+                        onChange={(e) => setNewClassroomName(e.target.value)}
+                        required
+                    />
+                    <textarea
+                        placeholder="Beschreibung"
+                        value={newClassroomDescription}
+                        onChange={(e) => setNewClassroomDescription(e.target.value)}
+                    ></textarea>
+                    <button type="submit">Erstellen</button>
+                </form>
             )}
 
-            {showCreateForm && renderCreateForm()}
+            <div>
+                {classrooms.length === 0 ? (
+                    <p>Keine Klassenzimmer gefunden.</p>
+                ) : (
+                    classrooms.map((classroom) => (
+                        <div key={classroom.id}>
+                            <h2>{classroom.name}</h2>
+                            <p>{classroom.description}</p>
+                        </div>
+                    ))
+                )}
+            </div>
         </div>
     );
 };
-
 export default Dashboard;
 
 

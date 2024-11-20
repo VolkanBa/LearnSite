@@ -113,7 +113,7 @@ exports.login = async (req, res) => {
     }
 };
 
-// Registrierung
+// register
 exports.register = async (req, res) => {
     try {
         const user = await User.create(req.body);
@@ -141,14 +141,14 @@ exports.refreshToken = (req, res) => {
 
 
 exports.getProfile = (req, res) => {
-    const user = req.user; // Benutzerinfo aus dem Token
+    const user = req.user; //User info from Token
     if (!user) {
         return res.status(404).json({ error: 'Benutzer nicht gefunden' });
     }
 
     res.status(200).json({
         id: user.id,
-        email: user.email, // Du kannst dies erweitern, wenn weitere Infos im Token sind
-        role: user.role, // Falls im Token vorhanden
+        email: user.email, 
+        role: user.role, 
     });
 };

@@ -33,23 +33,9 @@ const App = () => {
       <UserProvider> 
       <Router>
           <Routes>
-              {/* Öffentliche Route: Login */}
-              <Route path="/login" element={<Login />} />
-             
-
-              
-              <Route path="/register" element={<Register />} />
-
-              {/* Geschützte Route: Dashboard */}
-            
-                <Route
-                  path="/dashboard"
-                  element={
-                  // <PrivateRoute>
-                          <Dashboard />
-                  // {/* </PrivateRoute> */}
-                  }
-              />
+              <Route path="/login" element={<Login />} />            
+              <Route path="/register" element={<Register />} />            
+              <Route path="/dashboard" element={ <Dashboard />} />
             
           </Routes>
       </Router>

@@ -3,38 +3,41 @@ const express = require('express');
 
 // create classroom
 exports.createClassroom = async (req, res) => {
+    console.log('Request Body:', req.body); // Debugging für req.body
+    console.log('Request User:', req.user); // Debugging für req.user
     const { name, description } = req.body;
-    const userId = req.user.id; // Authenticated user
-
+    const userId = req.user.id; // Authentifizierter Benutzer
+    console.log("HIER1111");
     try {
-        // create classroom
+        console.log(";LASKDK");
+        // Klassenzimmer in die Datenbank einfügen
         const [result] = await db.query(
             'INSERT INTO classrooms (name, description, creator_id) VALUES (?, ?, ?)',
             [name, description, userId]
         );
 
-        // Make user a creator
-        await db.query(
-            'INSERT INTO classroom_users (classroom_id, user_id, role) VALUES (?, ?, ?)',
-            [result.insertId, userId, 'creator']
-        );
-
-        res.status(201).json({ message: 'Klassenzimmer erstellt!', classroomId: result.insertId });
+        res.status(201).json({ message: 'Klassenzimmer erfolgreich erstellt!', classroomId: result.insertId });
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ error: 'Fehler beim Erstellen des Klassenzimmers' });
+        console.error('Fehler beim Erstellen des Klassenzimmers:', error);
+        res.status(500).json({ error: 'Fehler beim Erstellen des Klassenzimmers.' });
     }
 };
 
-
 exports.getClassrooms = async (req, res) => {
-  try {
-      const [rows] = await db.query('SELECT * FROM classrooms WHERE creator_id = ?', [req.user.id]);
-      res.status(200).json(rows);
-  } catch (error) {
-      console.error('Fehler beim Abrufen der Klassenzimmer:', error);
-      res.status(500).json({ error: 'Fehler beim Abrufen der Klassenzimmer.' });
-  }
+    const userId = req.user.id;
+
+    try {
+        // Klassenzimmer des Benutzers abrufen
+        const [classrooms] = await db.query(
+            'SELECT * FROM classrooms WHERE creator_id = ?',
+            [userId]
+        );
+
+        res.status(200).json(classrooms);
+    } catch (error) {
+        console.error('Fehler beim Abrufen der Klassenzimmer:', error);
+        res.status(500).json({ error: 'Fehler beim Abrufen der Klassenzimmer.' });
+    }
 };
 
 // add user to classroom

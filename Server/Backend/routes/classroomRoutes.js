@@ -1,14 +1,14 @@
 // Classroom-related routes
 const express = require('express');
 const router = express.Router();
-const classroomController = require('../controllers/classroomController');
+const { createClassroom, getClassrooms } = require('../controllers/classroomController.js');
+const authMiddleware = require('../controllers/middelware.js');
 
 // GET /api/classrooms - gets all classrooms of the user
-router.get('/', classroomController.getClassrooms);
+// Route zum Erstellen eines Klassenzimmers
+router.post('/create', authMiddleware, createClassroom);
 
-router.post('/create', classroomController.createClassroom);
-router.post('/:id/add-user', classroomController.addUserToClassroom);
-router.get('/:id/users', classroomController.getClassroomUsers);
-router.delete('/:classroomId/remove-user', classroomController.removeUserFromClassroom);
+// Route zum Abrufen der Klassenzimmer
+router.get('/classrooms', authMiddleware, getClassrooms);
 
 module.exports = router;

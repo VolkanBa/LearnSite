@@ -5,6 +5,7 @@ import Register from './pages/register';
 import logo from './styles/LearningSiteLogo.webp';
 import Dashboard from './pages/dashboard.js';
 import './styles/darkmode.css';
+import { UserProvider } from './userContext.js'
 
 
 const PrivateRoute = ({ children }) => {
@@ -29,7 +30,7 @@ const App = () => {
 
       <main>
 
-
+      <UserProvider> 
       <Router>
           <Routes>
               {/* Öffentliche Route: Login */}
@@ -40,24 +41,19 @@ const App = () => {
               <Route path="/register" element={<Register />} />
 
               {/* Geschützte Route: Dashboard */}
-              <Route
+            
+                <Route
                   path="/dashboard"
                   element={
-                       <PrivateRoute>
+                  // <PrivateRoute>
                           <Dashboard />
-                       </PrivateRoute>
+                  // {/* </PrivateRoute> */}
                   }
               />
-
-
-
-              {
-              /* Standard-Weiterleitung bei unbekannten Routen */
-             <Route path="*" element={<Navigate to="/login" />} /> 
-             }
+            
           </Routes>
       </Router>
-  
+   </UserProvider>  
       </main>
     </div>
   

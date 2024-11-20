@@ -14,27 +14,27 @@ const Dashboard = () => {
     const [error, setError] = useState("");
 
     // User Information
-    useEffect(() => {
-                const fetchProfile = async () => {
-                    const token = localStorage.getItem('authToken');
-                    console.log('Gesendetes Token:', token);
-                    try {
-                        const response = await axios.get('/users/profile', {
-                            headers: { Authorization: `Bearer ${localStorage.getItem('authToken')}` },
+    // useEffect(() => {
+    //             const fetchProfile = async () => {
+    //                 const token = localStorage.getItem('authToken');
+    //                 console.log('Gesendetes Token:', token);
+    //                 try {
+    //                     const response = await axios.get('/users/profile', {
+    //                         headers: { Authorization: `Bearer ${localStorage.getItem('authToken')}` },
                             
-                        });
-                        console.log('API Antwort:', response.data);
-                        setUser(response.data);
-                        console.log('Benutzerprofil:', response.data);
+    //                     });
+    //                     console.log('API Antwort:', response.data);
+    //                     setUser(response.data);
+    //                     console.log('Benutzerprofil:', response.data);
                         
-                    } catch (err) {
-                        console.error(err);
-                        window.location.href = '/login';
-                    }
-                };
+    //                 } catch (err) {
+    //                     console.error(err);
+    //                     window.location.href = '/login';
+    //                 }
+    //             };
            
-                fetchProfile();
-            }, []);
+    //             fetchProfile();
+    //         }, []);
 
     // Klassenzimmer aus dem Backend abrufen
     useEffect(() => {

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from '../api';
-import '../styles/dashboard.module.css';
+import styles from '../styles/dashboard.module.css';
 
 const Dashboard = () => {
     // Benutzerinformationen
@@ -14,38 +14,19 @@ const Dashboard = () => {
     const [error, setError] = useState(""); 
     const token = localStorage.getItem('authToken');
 
-    // User Information
-    // useEffect(() => {
-    //             const fetchProfile = async () => {
-    //                 const token = localStorage.getItem('authToken');
-    //                 console.log('Gesendetes Token:', token);
-    //                 try {
-    //                     const response = await axios.get('/users/profile', {
-    //                         headers: { Authorization: `Bearer ${localStorage.getItem('authToken')}` },
-                            
-    //                     });
-    //                     console.log('API Antwort:', response.data);
-    //                     setUser(response.data);
-    //                     console.log('Benutzerprofil:', response.data);
-                        
-    //                 } catch (err) {
-    //                     console.error(err);
-    //                     window.location.href = '/login';
-    //                 }
-    //             };
-           
-    //             fetchProfile();
-    //         }, []);
+  
 
     
      // Klassenzimmer aus dem Backend abrufen
      const fetchClassrooms = async () => {
         try {
+            console.log("Vor axios.get");
             const response = await axios.get('/classrooms',
                 {
                     headers: { Authorization: `Bearer ${token}` }, // JWT-Token im Header hinzufügen
                 }
             );
+            console.log("repsonse.data: " + response.data);
             setClassrooms(response.data);
             
         } catch (error) {
@@ -90,39 +71,14 @@ const Dashboard = () => {
         }
     };
 
-    // UI für das Erstellungsformular
-    // const renderCreateForm = () => (
-    //     <div className="create-classroom-form">
-    //         <form onSubmit={handleCreateClassroom}>
-    //             <h2>Neues Klassenzimmer erstellen</h2>
-    //             <input
-    //                 type="text"
-    //                 placeholder="Name des Klassenzimmers"
-    //                 value={newClassroomName}
-    //                 onChange={(e) => setNewClassroomName(e.target.value)}
-    //                 required
-    //             />
-    //             <textarea
-    //                 placeholder="Beschreibung des Klassenzimmers"
-    //                 value={newClassroomDescription}
-    //                 onChange={(e) => setNewClassroomDescription(e.target.value)}
-    //                 required
-    //             ></textarea>
-    //             <button type="submit">Erstellen</button>
-    //             <button type="button" className="cancel-button" onClick={() => setShowCreateForm(false)}>
-    //                 Abbrechen
-    //             </button>
-    //         </form>
-    //     </div>
-    // );
 
     return (
-        <div>
-            <h1>Meine Klassenzimmer</h1>
+        <div className={styles.gridContainer}>
+            <h1 className={styles.meineKlassenzimmer}>Meine Klassenzimmer</h1>
             {successMessage && <p style={{ color: 'green' }}>{successMessage}</p>}
             {errorMessage && <p style={{ color: 'red' }}>{errorMessage}</p>}
 
-            <button onClick={() => setShowCreateForm(!showCreateForm)}>
+            <button onClick={() => setShowCreateForm(!showCreateForm)} className={styles.klassenzimmerErstellen}>
                 {showCreateForm ? 'Formular schließen' : 'Klassenzimmer erstellen'}
             </button>
 
@@ -140,22 +96,23 @@ const Dashboard = () => {
                         value={newClassroomDescription}
                         onChange={(e) => setNewClassroomDescription(e.target.value)}
                     ></textarea>
-                    <button type="submit">Erstellen</button>
+                    <button type="submit" className>Erstellen</button>
                 </form>
             )}
-
-            <div>
+                <div>
                 {classrooms.length === 0 ? (
                     <p>Keine Klassenzimmer gefunden.</p>
                 ) : (
                     classrooms.map((classroom) => (
-                        <div key={classroom.id}>
+                        <div key={classroom.id} className={styles.cardsStart}>
+                            <div className={styles.classCard}>
                             <h2>{classroom.name}</h2>
                             <p>{classroom.description}</p>
+                            </div>
                         </div>
                     ))
                 )}
-            </div>
+                </div>
         </div>
     );
 };

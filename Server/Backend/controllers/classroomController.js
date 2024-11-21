@@ -1,5 +1,13 @@
 const db = require('../config/db');
 const express = require('express');
+const jwt = require('jsonwebtoken');
+const cors = require('cors');
+
+const app = express();
+
+app.use(cors()); // Optional: Für Cross-Origin-Requests
+app.use(express.json()); // Um JSON-Daten zu parsen
+app.use(express.urlencoded({ extended: true })); // Für URL-codierte Daten
 
 // create classroom
 exports.createClassroom = async (req, res) => {
@@ -7,9 +15,7 @@ exports.createClassroom = async (req, res) => {
     console.log('Request User:', req.user); // Debugging für req.user
     const { name, description } = req.body;
     const userId = req.user.id; // Authentifizierter Benutzer
-    console.log("HIER1111");
     try {
-        console.log(";LASKDK");
         // Klassenzimmer in die Datenbank einfügen
         const [result] = await db.query(
             'INSERT INTO classrooms (name, description, creator_id) VALUES (?, ?, ?)',
@@ -25,6 +31,7 @@ exports.createClassroom = async (req, res) => {
 
 exports.getClassrooms = async (req, res) => {
     const userId = req.user.id;
+    console.log("Hier req.user.id: " + req.user.id);
 
     try {
         // Klassenzimmer des Benutzers abrufen

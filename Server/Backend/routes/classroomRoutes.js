@@ -9,6 +9,6 @@ const authMiddleware = require('../controllers/middelware.js');
 router.post('/create', authMiddleware, createClassroom);
 
 // Route zum Abrufen der Klassenzimmer
-router.get('/classrooms', authMiddleware, getClassrooms);
+router.get('/', authMiddleware, getClassrooms);
 
 module.exports = router;

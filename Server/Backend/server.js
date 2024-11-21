@@ -6,7 +6,9 @@ const db = require('./config/db');
 const authMiddleware = require('./controllers/middelware.js');
 const classroomRoutes = require('./routes/classroomRoutes');
 const cookieParser = require('cookie-parser');
-require('dotenv').config();;
+require('dotenv').config();
+
+app.use(express.json());
 
 const corsOptions ={
   origin:'http://localhost:3000', 
@@ -34,7 +36,7 @@ app.use('/api/users', (req, res, next) => {
 
 // Middleware
 //app.use(cors());
-app.use(express.json());
+
 app.use(cors({ origin: 'http://localhost:3000', credentials: true }));
 app.get('/api/user', authMiddleware, (req, res) => {
   // Nach erfolgreicher Validierung: Zugriff auf Benutzerdaten

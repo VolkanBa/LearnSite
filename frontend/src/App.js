@@ -8,11 +8,11 @@ import './styles/darkmode.css';
 import { UserProvider } from './userContext.js'
 
 
-const PrivateRoute = ({ children }) => {
-   // Prüfen, ob das JWT-Token existiert
-   const isAuthenticated = !!localStorage.getItem('authToken'); 
-   return isAuthenticated ? children : <Navigate to="/login" />;
-};
+// const PrivateRoute = ({ children }) => {
+//    // Prüfen, ob das JWT-Token existiert
+//    const isAuthenticated = !!localStorage.getItem('authToken'); 
+//    return isAuthenticated ? children : <Navigate to="/login" />;
+// };
 
 
 const App = () => {

@@ -8,12 +8,16 @@ import './styles/darkmode.css';
 import { UserProvider } from './userContext.js'
 
 
-// const PrivateRoute = ({ children }) => {
-//    // Prüfen, ob das JWT-Token existiert
-//    const isAuthenticated = !!localStorage.getItem('authToken'); 
-//    return isAuthenticated ? children : <Navigate to="/login" />;
-// };
+const PrivateRoute = ({ children }) => {
+   // Prüfen, ob das JWT-Token existiert
+   const isAuthenticated = !!localStorage.getItem('authToken'); 
+   return isAuthenticated ? children : <Navigate to="/login" />;
+};
 
+
+
+const path = window.location.pathname;
+console.log("path hier:" +path);
 
 const App = () => {
   return (
@@ -21,11 +25,17 @@ const App = () => {
      <header className="header">
       <img src={logo} alt="Logo" />
       <h1>LearnSite</h1>
-      <nav>
-        <a href="/dashboard">Dashboard</a>
-        <a href="/login">Login</a>
-        <a href="/register">Register</a>
+      {path === "/login" || path === "/register"?(
+        <nav>
+          <a href="/login">Login</a>
+          <a href="/register">Register</a>
+        </nav>
+        )
+      
+      :  <nav>     
+          <a href="/dashboard">Dashboard</a>
       </nav>
+      }
     </header>
 
       <main>

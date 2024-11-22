@@ -34,6 +34,7 @@ const App = () => {
       
       :  <nav>     
           <a href="/dashboard">Dashboard</a>
+          <a href="/login">logout</a>
       </nav>
       }
     </header>

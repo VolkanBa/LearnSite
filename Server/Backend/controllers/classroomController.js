@@ -29,6 +29,35 @@ exports.createClassroom = async (req, res) => {
     }
 };
 
+exports.deleteUserFromClassroom = async (req, res) => {
+    const { classroomId } = req.params; // ID des Klassenzimmers aus der Route
+    const userId = req.user.id; // ID des authentifizierten Benutzers (aus der Middleware)
+
+    try {
+        // Prüfen, ob der Benutzer Mitglied des Klassenzimmers ist
+        const [membership] = await db.query(
+            'SELECT * FROM classroom_users WHERE classroom_id = ? AND user_id = ?',
+            [classroomId, userId]
+        );
+
+        if (membership.length === 0) {
+            return res.status(404).json({ error: 'Benutzer ist kein Mitglied dieses Klassenzimmers.' });
+        }
+
+        // Benutzer aus dem Klassenzimmer entfernen
+        await db.query(
+            'DELETE FROM classroom_users WHERE classroom_id = ? AND user_id = ?',
+            [classroomId, userId]
+        );
+
+        res.status(200).json({ message: 'Benutzer erfolgreich aus dem Klassenzimmer entfernt.' });
+    } catch (error) {
+        console.error('Fehler beim Entfernen des Benutzers aus dem Klassenzimmer:', error);
+        res.status(500).json({ error: 'Fehler beim Entfernen aus dem Klassenzimmer.' });
+    }
+};
+
+
 exports.getClassrooms = async (req, res) => {
     const userId = req.user.id;
     console.log("Hier req.user.id: " + req.user.id);

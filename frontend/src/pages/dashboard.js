@@ -13,7 +13,16 @@ const Dashboard = () => {
     const [errorMessage, setErrorMessage] = useState('');
     const [error, setError] = useState(""); 
     const token = localStorage.getItem('authToken');
+    const [showDelete, setShowDelete] = useState(false);
+    const [deleteConfirmation, setDeleteConfirmation] = useState('');
+    const [showDeleteStates, setShowDeleteStates] = useState({});
 
+    const toggleDeleteState = (id) => {
+        setShowDeleteStates((prev) => ({
+            ...prev,
+            [id]: !prev[id],
+        }));
+    };
   
 
     
@@ -61,13 +70,40 @@ const Dashboard = () => {
 
         )
 
-        
             setSuccessMessage('Klassenzimmer erfolgreich erstellt!');
             setShowCreateForm(false); // Formular schließen
             fetchClassrooms(); // Aktualisiere die Klassenzimmerliste
         } catch (error) {
             console.error('Fehler beim Erstellen des Klassenzimmers:', error);
             setErrorMessage('Fehler beim Erstellen des Klassenzimmers.');
+        }
+    };
+
+    const handleDeleteClassroom = async (classroomId) => {
+        setErrorMessage('');
+        setSuccessMessage('');
+        
+        if (deleteConfirmation.toLowerCase() !== 'ja') {
+            alert('Bitte bestätigen Sie mit "ja", dass Sie die Klasse löschen möchten.');
+            return;
+        }
+
+
+        try {
+            //Delete Classroom
+            await axios.delete(`/classrooms/${classroomId}/leave`, {
+            },
+            {
+                headers: { Authorization: `Bearer ${token}` }, // JWT-Token im Header hinzufügen
+            }
+
+        )
+            alert("Die Klasse wurde erfolgreich Verlassen");
+            setShowDelete(false);
+            fetchClassrooms(); // Aktualisiere die Klassenzimmerliste
+        } catch (error) {
+            console.error('Fehler beim löschen des Klassenzimmers:', error);
+            setErrorMessage('Fehler beim löschen des Klassenzimmers.');
         }
     };
 
@@ -99,15 +135,40 @@ const Dashboard = () => {
                     <button type="submit" className>Erstellen</button>
                 </form>
             )}
+
+    
+
                 <div>
                 {classrooms.length === 0 ? (
                     <p>Keine Klassenzimmer gefunden.</p>
                 ) : (
-                    classrooms.map((classroom) => (
+                    classrooms.map((classroom) => ( 
                         <div key={classroom.id} className={styles.cardsStart}>
                             <div className={styles.classCard}>
-                            <h2>{classroom.name}</h2>
-                            <p>{classroom.description}</p>
+                            <h2 >{classroom.name}</h2> 
+                            <button className={styles.gruppeOeffnen}>Gruppe öffnen</button>
+                            <p>{classroom.description}</p> 
+                            <button className={styles.gruppeEntfernen}
+                             onClick={() => toggleDeleteState(classroom.id)}>
+                                 {showDeleteStates[classroom.id] ? 'Abbrechen' : 'Klasse verlassen'}
+                            </button>
+                            
+                            {showDeleteStates[classroom.id] &&  (
+                <form onSubmit={(e) => {
+                    e.preventDefault();
+                    handleDeleteClassroom(classroom.id);
+                    toggleDeleteState(classroom.id);
+                }}>
+                <input
+                    type="text"
+                    placeholder='Tippen Sie "ja", um die Klasse zu verlassen'
+                    value={deleteConfirmation}
+                    onChange={(e) => setDeleteConfirmation(e.target.value)}
+                    required
+                />
+                <button type="submit">Bestätigen</button>
+            </form>
+            )}              
                             </div>
                         </div>
                     ))

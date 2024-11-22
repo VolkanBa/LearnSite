@@ -7,28 +7,46 @@
 
 
 .classCard{
-border: 0.5vh solid #4caf50;
+border: 0.5vh solid #43e449;
 border-radius: 2vh;
 width: 35vw;
 padding: 2.5vh;
 margin-top: 1.5vh;
-grid-column: 1;
 }
 
 
 
 .klassenzimmerErstellen{
-  width: 0.5fr;
-  grid-row: 2;
+  grid-column: 1 / -1;
+  width: 30vh;
 
 }
 
 
 .meineKlassenzimmer{
   grid-row:1;
+  grid-column: 1;
   
 }
 
 .cardsStart{
-  grid-row:3;
+  grid-row:2;
+  grid-column: 1;
+}
+
+
+.gruppeEntfernen{
+  background-color: #bc1bb6;
+  margin-left: 27vw;
+  cursor: pointer;
+}
+
+.gruppeOeffnen{
+margin-left: 27vw;
+padding-right: 4.5vh;
+cursor: pointer;
+}
+
+.gruppeEntfernen:hover{
+  background-color: #bc1bb6 ;
 }

@@ -22,6 +22,14 @@ exports.createClassroom = async (req, res) => {
             [name, description, userId]
         );
 
+        const classroomId = result.insertId;
+
+        // Den Ersteller direkt in die classroom_users-Tabelle einfügen
+        await db.query(
+            'INSERT INTO classroom_users (classroom_id, user_id, role) VALUES (?, ?, ?)',
+            [classroomId, userId, 'creator']
+        );
+
         res.status(201).json({ message: 'Klassenzimmer erfolgreich erstellt!', classroomId: result.insertId });
     } catch (error) {
         console.error('Fehler beim Erstellen des Klassenzimmers:', error);
@@ -65,7 +73,10 @@ exports.getClassrooms = async (req, res) => {
     try {
         // Klassenzimmer des Benutzers abrufen
         const [classrooms] = await db.query(
-            'SELECT * FROM classrooms WHERE creator_id = ?',
+            `SELECT c.id, c.name, c.description, cu.role 
+             FROM classrooms c
+             JOIN classroom_users cu ON c.id = cu.classroom_id
+             WHERE cu.user_id = ?`,
             [userId]
         );
 
@@ -129,40 +140,22 @@ exports.getClassroomUsers = async (req, res) => {
 // delete user from classroom
 exports.removeUserFromClassroom = async (req, res) => {
     const { classroomId } = req.params;
-    const { userIdToRemove } = req.body;
-    const requestingUserId = req.user.id;
+    const userId = req.user.id; // ID des authentifizierten Benutzers
 
     try {
-        // get permission of user
-        const [requestingUser] = await db.query(
-            'SELECT role FROM classroom_users WHERE classroom_id = ? AND user_id = ?',
-            [classroomId, requestingUserId]
-        );
-
-        if (!requestingUser.length) {
-            return res.status(403).json({ error: 'Du bist kein Mitglied dieses Klassenzimmers.' });
-        }
-
-        const requestingRole = requestingUser[0].role;
-
-        // role of user
-        if (requestingRole === 'teacher' && userIdToRemove === 'creator') {
-            return res.status(403).json({ error: 'Lehrer können den Ersteller nicht entfernen.' });
-        }
-
-        if (requestingRole === 'creator' && userIdToRemove === requestingUserId) {
-            return res.status(403).json({ error: 'Der Creator kann sich nicht selbst entfernen.' });
-        }
-
-        // delete user
-        await db.query(
+        // Entferne den Benutzer aus der Klasse
+        const [result] = await db.query(
             'DELETE FROM classroom_users WHERE classroom_id = ? AND user_id = ?',
-            [classroomId, userIdToRemove]
+            [classroomId, userId]
         );
+        
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ error: `Benutzer oder Klasse nicht gefunden. UserID: ${userId}, classroomId: ${classroomId}` });
+        }
 
-        res.status(200).json({ message: 'Benutzer erfolgreich entfernt!' });
+        res.status(200).json({ message: 'Benutzer erfolgreich aus der Klasse entfernt' });
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ error: 'Fehler beim Entfernen des Benutzers.' });
+        console.error('Fehler beim Entfernen des Benutzers aus der Klasse:', error);
+        res.status(500).json({ error: 'Interner Serverfehler' });
     }
 };

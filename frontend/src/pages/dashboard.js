@@ -24,7 +24,7 @@ const Dashboard = () => {
         }));
     };
   
-
+    
     
      // Klassenzimmer aus dem Backend abrufen
      const fetchClassrooms = async () => {
@@ -48,6 +48,7 @@ const Dashboard = () => {
     useEffect(() => {
         fetchClassrooms();
     }, []);
+
 
     // Neues Klassenzimmer erstellen
     const handleCreateClassroom = async (e) => {
@@ -79,33 +80,30 @@ const Dashboard = () => {
         }
     };
 
-    const handleDeleteClassroom = async (classroomId) => {
-        setErrorMessage('');
-        setSuccessMessage('');
-        
-        if (deleteConfirmation.toLowerCase() !== 'ja') {
-            alert('Bitte bestätigen Sie mit "ja", dass Sie die Klasse löschen möchten.');
-            return;
-        }
 
-
-        try {
-            //Delete Classroom
-            await axios.delete(`/classrooms/${classroomId}/leave`, {
-            },
-            {
-                headers: { Authorization: `Bearer ${token}` }, // JWT-Token im Header hinzufügen
-            }
-
-        )
-            alert("Die Klasse wurde erfolgreich Verlassen");
-            setShowDelete(false);
-            fetchClassrooms(); // Aktualisiere die Klassenzimmerliste
-        } catch (error) {
-            console.error('Fehler beim löschen des Klassenzimmers:', error);
-            setErrorMessage('Fehler beim löschen des Klassenzimmers.');
-        }
+    const HandleRemoveUser = async (classroomId) => {
+        try{
+        const token = localStorage.getItem('authToken');
+        await axios.delete(`/classrooms/${classroomId}/remove`,
+        {headers: { Authorization: `Bearer ${token}` }
+    });
+    setClassrooms((prev)=> prev.filter((classroom) => classroomId !== classroom.id)
+    );
+    alert("Klasse wurde erfolgreich entfernt");
+}
+     catch(error){
+        console.error("Fehler beim entfernen der Klasse: ", error);
     };
+
+    setShowDeleteStates((prev) => ({
+        ...prev,
+        [classroomId]: false,
+    }));
+
+    fetchClassrooms();
+   
+}
+   
 
 
     return (
@@ -149,14 +147,15 @@ const Dashboard = () => {
                             <button className={styles.gruppeOeffnen}>Gruppe öffnen</button>
                             <p>{classroom.description}</p> 
                             <button className={styles.gruppeEntfernen}
-                             onClick={() => toggleDeleteState(classroom.id)}>
+                             onClick={() => HandleRemoveUser(classroom.id)}>
                                  {showDeleteStates[classroom.id] ? 'Abbrechen' : 'Klasse verlassen'}
                             </button>
                             
                             {showDeleteStates[classroom.id] &&  (
                 <form onSubmit={(e) => {
                     e.preventDefault();
-                    handleDeleteClassroom(classroom.id);
+                    HandleRemoveUser(classroom.id);
+
                     toggleDeleteState(classroom.id);
                 }}>
                 <input
@@ -178,39 +177,3 @@ const Dashboard = () => {
     );
 };
 export default Dashboard;
-
-
-// import React, { useEffect, useState } from 'react';
-// import axios from '../api';
-
-// const Dashboard = () => {
-//     const [user, setUser] = useState(null);
-
-//     useEffect(() => {
-//         const fetchProfile = async () => {
-//             const token = localStorage.getItem('authToken');
-//             console.log('Gesendetes Token:', token);
-//             try {
-//                 const response = await axios.get('/users/profile', {
-//                     headers: { Authorization: `Bearer ${localStorage.getItem('authToken')}` },
-                    
-//                 });
-//                 console.log('API Antwort:', response.data);
-//                 setUser(response.data);
-//                 console.log('Benutzerprofil:', response.data);
-                
-//             } catch (err) {
-//                 console.error(err);
-//                 window.location.href = '/login';
-//             }
-//         };
-   
-//         fetchProfile();
-//     }, []);
-
-//     if (!user) return <p>Lade...</p>;
-
-//     return <h1>Willkommen, {user.email}</h1>;
-// };
-
-// export default Dashboard;

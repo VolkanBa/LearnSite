@@ -1,9 +1,14 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext  } from 'react';
+import { useNavigate } from 'react-router-dom';
 import axios from '../api';
 import styles from '../styles/dashboard.module.css';
+import { ClassroomContext } from "./context";
+
+
 
 const Dashboard = () => {
     // Benutzerinformationen
+    const { setClassroomData } = useContext(ClassroomContext);
     const [user, setUser] = useState(null); // Benutzerinformationen speichern
     const [classrooms, setClassrooms] = useState([]); // Liste der Klassenzimmer
     const [showCreateForm, setShowCreateForm] = useState(false); // Toggle für das Erstellungsformular
@@ -16,6 +21,7 @@ const Dashboard = () => {
     const [showDelete, setShowDelete] = useState(false);
     const [deleteConfirmation, setDeleteConfirmation] = useState('');
     const [showDeleteStates, setShowDeleteStates] = useState({});
+    const navigate = useNavigate();
 
     const toggleDeleteState = (id) => {
         setShowDeleteStates((prev) => ({
@@ -80,7 +86,14 @@ const Dashboard = () => {
         }
     };
 
+    //opens a classroom
+    const handleOpenClassroom = (classroom) => {
+        setClassroomData(classroom);
+        navigate(`/classroom/${classroom}`); // Navigiere zur spezifischen Seite
+    };
 
+
+    //remove a User from a classroom
     const HandleRemoveUser = async (classroomId) => {
         try{
         const token = localStorage.getItem('authToken');
@@ -144,7 +157,10 @@ const Dashboard = () => {
                         <div key={classroom.id} className={styles.cardsStart}>
                             <div className={styles.classCard}>
                             <h2 >{classroom.name}</h2> 
-                            <button className={styles.gruppeOeffnen}>Gruppe öffnen</button>
+                            <button className={styles.gruppeOeffnen}
+                            onClick={() => handleOpenClassroom(classroom.id)}
+                            >Gruppe öffnen
+                            </button>
                             <p>{classroom.description}</p> 
                             <button className={styles.gruppeEntfernen}
                              onClick={() => HandleRemoveUser(classroom.id)}>
@@ -155,17 +171,8 @@ const Dashboard = () => {
                 <form onSubmit={(e) => {
                     e.preventDefault();
                     HandleRemoveUser(classroom.id);
-
                     toggleDeleteState(classroom.id);
                 }}>
-                <input
-                    type="text"
-                    placeholder='Tippen Sie "ja", um die Klasse zu verlassen'
-                    value={deleteConfirmation}
-                    onChange={(e) => setDeleteConfirmation(e.target.value)}
-                    required
-                />
-                <button type="submit">Bestätigen</button>
             </form>
             )}              
                             </div>

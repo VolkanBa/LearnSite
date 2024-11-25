@@ -143,7 +143,7 @@ exports.removeUserFromClassroom = async (req, res) => {
     const userId = req.user.id; // ID des authentifizierten Benutzers
 
     try {
-        // Entferne den Benutzer aus der Klasse
+        // deletes user from class
         const [result] = await db.query(
             'DELETE FROM classroom_users WHERE classroom_id = ? AND user_id = ?',
             [classroomId, userId]
@@ -157,5 +157,56 @@ exports.removeUserFromClassroom = async (req, res) => {
     } catch (error) {
         console.error('Fehler beim Entfernen des Benutzers aus der Klasse:', error);
         res.status(500).json({ error: 'Interner Serverfehler' });
+    }
+};
+
+
+exports.getClassroomData = async (req, res) => {
+    const { id } = req.params;
+
+    try {
+        const [messages] = await db.query('SELECT * FROM messages WHERE classroom_id = ?', [id]);
+        const [files] = await db.query('SELECT * FROM files WHERE classroom_id = ?', [id]);
+        res.status(200).json({ messages, files });
+    } catch (error) {
+        console.error('Fehler beim Abrufen der Klassenzimmer-Daten:', error);
+        res.status(500).json({ error: 'Fehler beim Abrufen der Klassenzimmer-Daten.' });
+    }
+};
+
+// send messages
+exports.sendMessage = async (req, res) => {
+    const { id } = req.params;
+    const { message } = req.body;
+    const userId = req.user.id;
+
+    try {
+        const [result] = await db.query(
+            'INSERT INTO messages (classroom_id, user_id, content) VALUES (?, ?, ?)',
+            [id, userId, message]
+        );
+        res.status(201).json({ id: result.insertId, content: message });
+    } catch (error) {
+        console.error('Fehler beim Senden der Nachricht:', error);
+        res.status(500).json({ error: 'Fehler beim Senden der Nachricht.' });
+    }
+};
+
+
+// upload files
+exports.uploadFile = async (req, res) => {
+    const { id } = req.params;
+    const file = req.file; // uploaded files
+    const userId = req.user.id;
+
+    try {
+        const [result] = await db.query(
+            'INSERT INTO files (classroom_id, user_id, name, path) VALUES (?, ?, ?, ?)',
+            [id, userId, file.originalname, file.path]
+        );
+        res.status(201).json({ id: result.insertId, name: file.originalname });
+    } catch (error) {
+        console.error('Fehler beim Hochladen der Datei:', error);
+        res.status(500).json({ error: 'Fehler beim Hochladen der Datei.' });
     }
 };

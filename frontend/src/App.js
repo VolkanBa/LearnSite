@@ -6,6 +6,8 @@ import logo from './styles/LearningSiteLogo.webp';
 import Dashboard from './pages/dashboard.js';
 import './styles/darkmode.css';
 import { UserProvider } from './userContext.js'
+import Classroom from './pages/classroom.js';
+import { ClassroomProvider } from './pages/context.js';
 
 
 const PrivateRoute = ({ children }) => {
@@ -42,14 +44,17 @@ const App = () => {
       <main>
 
       <UserProvider> 
+      <ClassroomProvider>
       <Router>
           <Routes>
               <Route path="/login" element={<Login />} />            
               <Route path="/register" element={<Register />} />            
               <Route path="/dashboard" element={ <Dashboard />} />
+              <Route path="/classroom/:classroomId" element={<Classroom />} />
             
           </Routes>
       </Router>
+      </ClassroomProvider>
    </UserProvider>  
       </main>
     </div>

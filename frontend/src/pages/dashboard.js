@@ -88,8 +88,12 @@ const Dashboard = () => {
 
     //opens a classroom
     const handleOpenClassroom = (classroom) => {
-        setClassroomData(classroom);
-        navigate(`/classroom/${classroom}`); // Navigiere zur spezifischen Seite
+        setClassroomData({
+            id: classroom.id,
+            name: classroom.name,
+            description: classroom.description,
+        }); 
+        navigate(`/classroom/${classroom.id}`); // Navigiere zur spezifischen Seite
     };
 
 
@@ -158,7 +162,7 @@ const Dashboard = () => {
                             <div className={styles.classCard}>
                             <h2 >{classroom.name}</h2> 
                             <button className={styles.gruppeOeffnen}
-                            onClick={() => handleOpenClassroom(classroom.id)}
+                            onClick={() => handleOpenClassroom(classroom)}
                             >Gruppe öffnen
                             </button>
                             <p>{classroom.description}</p> 

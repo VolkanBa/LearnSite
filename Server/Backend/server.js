@@ -7,6 +7,7 @@ const authMiddleware = require('./controllers/middelware.js');
 const classroomRoutes = require('./routes/classroomRoutes');
 const cookieParser = require('cookie-parser');
 require('dotenv').config();
+const path = require('path');
 
 app.use(express.json());
 
@@ -22,6 +23,8 @@ app.use(cors(corsOptions));
 
 // Geschützte Routen
 app.use('/api/classrooms', authMiddleware, classroomRoutes);
+
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 
 db.query('SELECT 1')

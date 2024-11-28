@@ -2,6 +2,8 @@ const db = require('../config/db');
 const express = require('express');
 const jwt = require('jsonwebtoken');
 const cors = require('cors');
+const path = require('path');
+const fs = require('fs'); // Für Dateisystemoperationen
 
 const app = express();
 
@@ -193,20 +195,73 @@ exports.sendMessage = async (req, res) => {
 };
 
 
-// upload files
+
 exports.uploadFile = async (req, res) => {
-    const { id } = req.params;
-    const file = req.file; // uploaded files
-    const userId = req.user.id;
+    console.log('Eingehende Datei:', req.file);
+    console.log('Classroom ID:', req.params.classroomId);
+
+    if (!req.file) {
+        return res.status(400).json({ error: 'Keine Datei hochgeladen.' });
+    }
 
     try {
-        const [result] = await db.query(
-            'INSERT INTO files (classroom_id, user_id, name, path) VALUES (?, ?, ?, ?)',
-            [id, userId, file.originalname, file.path]
+        // Dateiinhalt lesen und in der Datenbank speichern
+        const fileData = fs.readFileSync(req.file.path); // Dateiinhalt als BLOB
+        const { classroomId } = req.params;
+        const userId = req.user.id; // Benutzer-ID aus JWT
+
+        // Datenbankeintrag erstellen
+        await db.query(
+            'INSERT INTO files (name, data, type, classroom_id, user_id) VALUES (?, ?, ?, ?, ?)',
+            [req.file.originalname, fileData, req.file.mimetype, classroomId, userId]
         );
-        res.status(201).json({ id: result.insertId, name: file.originalname });
+
+        // Optional: Datei aus dem Dateisystem entfernen
+        fs.unlinkSync(req.file.path);
+
+        res.status(200).json({ message: 'Datei erfolgreich hochgeladen.' });
     } catch (error) {
         console.error('Fehler beim Hochladen der Datei:', error);
-        res.status(500).json({ error: 'Fehler beim Hochladen der Datei.' });
+        res.status(500).json({ error: 'Fehler beim Hochladen der Datei. im Backend' });
+    }
+};
+
+exports.getFiles = async (req, res) => {
+    const { classroomId } = req.params;
+
+    try {
+        // Dateien für das angegebene Klassenzimmer abrufen
+        const [files] = await db.query(
+            'SELECT id, name, type FROM files WHERE classroom_id = ?',
+            [classroomId]
+        );
+
+        res.status(200).json(files); // Sende Dateiinformationen an den Client
+    } catch (error) {
+        console.error('Fehler beim Abrufen der Dateien:', error);
+        res.status(500).json({ error: 'Fehler beim Abrufen der Dateien.' });
+    }
+};
+
+exports.getFileData = async (req, res) => {
+    const { fileId } = req.params;
+
+    try {
+        // Dateiinhalt aus der Datenbank abrufen
+        const [rows] = await db.query('SELECT name, data, type FROM files WHERE id = ?', [fileId]);
+
+        if (rows.length === 0) {
+            return res.status(404).json({ error: 'Datei nicht gefunden.' });
+        }
+
+        const file = rows[0];
+
+        // Datei senden
+        res.setHeader('Content-Type', file.type);
+        res.setHeader('Content-Disposition', `attachment; filename="${file.name}"`);
+        res.send(file.data);
+    } catch (error) {
+        console.error('Fehler beim Abrufen der Datei:', error);
+        res.status(500).json({ error: 'Fehler beim Abrufen der Datei.' });
     }
 };

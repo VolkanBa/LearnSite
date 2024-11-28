@@ -1,9 +1,12 @@
 // Classroom-related routes
 const express = require('express');
 const router = express.Router();
-const { createClassroom, getClassrooms, removeUserFromClassroom} = require('../controllers/classroomController.js');
+const multer = require('multer');
+const { createClassroom, getClassrooms, removeUserFromClassroom, uploadFile, getFiles, getFileData} = require('../controllers/classroomController.js');
 const authMiddleware = require('../controllers/middelware.js');
-const { getClassroomData, sendMessage, uploadFile } = require('../controllers/classroomController.js');
+const upload = require('../controllers/uploadMiddleware.js')
+const { getClassroomData, sendMessage } = require('../controllers/classroomController.js');
+
 
 // GET /api/classrooms - gets all classrooms of the user
 // Route zum Erstellen eines Klassenzimmers
@@ -19,8 +22,15 @@ router.delete('/:classroomId/remove', authMiddleware, removeUserFromClassroom);
 router.get('/:id/data', authMiddleware, getClassroomData); 
 // Nachrichten
 router.post('/:id/messages', authMiddleware, sendMessage); 
-// Dateien hochladen
-router.post('/:id/upload', authMiddleware, uploadFile); 
+
+router.post('/:classroomId/upload', authMiddleware, upload.single('file'), uploadFile);
+
+// Route zum Abrufen von Dateien
+router.get('/:classroomId/files', authMiddleware, getFiles);
+
+// Route zum Abrufen einer spezifischen Datei
+router.get('/file/:fileId', authMiddleware, getFileData);
+
 
 
 module.exports = router;

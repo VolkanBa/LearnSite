@@ -4,12 +4,65 @@ const jwt = require('jsonwebtoken');
 const cors = require('cors');
 const path = require('path');
 const fs = require('fs'); // Für Dateisystemoperationen
+const multer = require('multer');
 
 const app = express();
 
 app.use(cors()); // Optional: Für Cross-Origin-Requests
 app.use(express.json()); // Um JSON-Daten zu parsen
 app.use(express.urlencoded({ extended: true })); // Für URL-codierte Daten
+
+
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        const classroomFolder = `uploads/classrooms/${req.params.classroomId}`;
+        if (!fs.existsSync(classroomFolder)) {
+            fs.mkdirSync(classroomFolder, { recursive: true }); // Verzeichnis erstellen
+        }
+        cb(null, classroomFolder);
+    },
+    filename: (req, file, cb) => {
+        cb(null, `${Date.now()}-${file.originalname}`); // Zeitstempel für einzigartige Dateinamen
+    }
+});
+
+const upload = multer({
+    storage,
+    fileFilter: (req, file, cb) => {
+        const allowedTypes = ['application/pdf'];
+        if (!allowedTypes.includes(file.mimetype)) {
+            return cb(new Error('Nur PDF-Dateien sind erlaubt.'));
+        }
+        cb(null, true);
+    }
+});
+
+exports.uploadFile = async (req, res) => {
+    upload.single('file')(req, res, async (err) => {
+        if (err) {
+            console.error("Multer-Fehler:", err);
+            return res.status(400).json({ error: err.message });
+        }
+
+        try {
+            console.log("Eingehende Datei:", req.file);
+            const { classroomId } = req.params;
+            const { originalname, mimetype, path } = req.file;
+
+            // Dateiinfo in die Datenbank schreiben
+            const [result] = await db.query(
+                'INSERT INTO files (name, type, path, classroom_id, user_id) VALUES (?, ?, ?, ?, ?)',
+                [originalname, mimetype, path, classroomId, req.user.id]
+            );
+
+            console.log("Datei erfolgreich hochgeladen:", result);
+            res.status(200).json({ message: "Datei erfolgreich hochgeladen!", fileId: result.insertId });
+        } catch (error) {
+            console.error("Datenbank-Fehler:", error);
+            res.status(500).json({ error: "Fehler beim Hochladen der Datei." });
+        }
+    });
+};
 
 // create classroom
 exports.createClassroom = async (req, res) => {
@@ -195,10 +248,9 @@ exports.sendMessage = async (req, res) => {
 };
 
 
-
 exports.uploadFile = async (req, res) => {
     console.log('Eingehende Datei:', req.file);
-    console.log('Classroom ID:', req.params.classroomId);
+    console.log('Classroom ID:', req.params.classroomId); // Debugging der Classroom-ID
 
     if (!req.file) {
         return res.status(400).json({ error: 'Keine Datei hochgeladen.' });
@@ -207,13 +259,13 @@ exports.uploadFile = async (req, res) => {
     try {
         // Dateiinhalt lesen und in der Datenbank speichern
         const fileData = fs.readFileSync(req.file.path); // Dateiinhalt als BLOB
-        const { classroomId } = req.params;
+        const classroomId  = req.params.classroomId; // Classroom-ID aus URL-Parametern
         const userId = req.user.id; // Benutzer-ID aus JWT
 
         // Datenbankeintrag erstellen
         await db.query(
-            'INSERT INTO files (name, data, type, classroom_id, user_id) VALUES (?, ?, ?, ?, ?)',
-            [req.file.originalname, fileData, req.file.mimetype, classroomId, userId]
+            'INSERT INTO files (name, type, path, classroom_id, user_id) VALUES (?, ?, ?, ?, ?)',
+            [req.file.originalname, req.file.mimetype, req.file.path, classroomId, userId]
         );
 
         // Optional: Datei aus dem Dateisystem entfernen
@@ -222,9 +274,10 @@ exports.uploadFile = async (req, res) => {
         res.status(200).json({ message: 'Datei erfolgreich hochgeladen.' });
     } catch (error) {
         console.error('Fehler beim Hochladen der Datei:', error);
-        res.status(500).json({ error: 'Fehler beim Hochladen der Datei. im Backend' });
+        res.status(500).json({ error: 'Fehler beim Hochladen der Datei.' });
     }
 };
+
 
 exports.getFiles = async (req, res) => {
     const { classroomId } = req.params;

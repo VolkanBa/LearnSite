@@ -31,6 +31,4 @@ router.get('/:classroomId/files', authMiddleware, getFiles);
 // Route zum Abrufen einer spezifischen Datei
 router.get('/file/:fileId', authMiddleware, getFileData);
 
-
-
 module.exports = router;

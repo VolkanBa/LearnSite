@@ -1,110 +1,100 @@
-import React, { useState, useEffect, useContext } from 'react';
-import { useParams } from 'react-router-dom'; // Zugriff auf die Classroom-ID aus der URL
-import axios from '../api';
-import { ClassroomContext } from './context.js';
-import { Worker, Viewer } from '@react-pdf-viewer/core';
-import '@react-pdf-viewer/core/lib/styles/index.css';
+import React, { useState, useEffect, useCallback } from 'react';
+import { useParams } from 'react-router-dom'; // Importiere useParams
+import axios from 'axios';
 
+const FileUpload = () => {
+    const { classroomId } = useParams(); // classroomId direkt aus der URL holen
+    const [selectedFile, setSelectedFile] = useState(null);
+    const [files, setFiles] = useState([]);
+    const [uploadProgress, setUploadProgress] = useState(0);
 
-const Classroom = () => {
-    const { classroomData } = useContext(ClassroomContext); 
-    const { classroomId } = useParams(); // ID des Klassenzimmers aus der URL
-    const [messages, setMessages] = useState([]); // Chat-Nachrichten
-    const [newMessage, setNewMessage] = useState(''); // Neue Nachricht
-    const [files, setFiles] = useState([]); // Dateien im Klassenzimmer
-    const token = localStorage.getItem('authToken'); // Authentifizierungs-Token
+    const token = localStorage.getItem('authToken'); 
+    console.log("HIEHRIHER  " + token);
 
-    // Dateien abrufen
-    const fetchFiles = async () => {
-        try {
-            const response = await axios.get(`/classrooms/${classroomId}/files`, {
-                headers: { Authorization: `Bearer ${token}` },
-            });
-            setFiles(response.data);
-        } catch (error) {
-            console.error('Fehler beim Abrufen der Dateien:', error);
-        }
+    const handleFileChange = (event) => {
+        setSelectedFile(event.target.files[0]);
     };
 
-    // Dateien hochladen
-    const handleUploadFile = async (e) => {
-        const file = e.target.files[0];
-        if (!file) return; // Überprüfung, ob eine Datei ausgewählt wurde
-
+    const handleUpload = async () => {
+        if (!classroomId) {
+            console.error("Keine Classroom-ID gefunden!");
+            return;
+        }
+    
+        console.log("Ausgewählte Datei:", selectedFile);
         const formData = new FormData();
-        formData.append('file', file);
-
+        formData.append('file', selectedFile);
+        
         try {
             const response = await axios.post(
-                `/classrooms/${classroomId}/upload`,
+                `http://localhost:5000/api/classrooms/${classroomId}/upload`,
                 formData,
                 {
                     headers: {
-                        Authorization: `Bearer ${token}`,
                         'Content-Type': 'multipart/form-data',
+                        'Authorization': `Bearer ${token}` // Authentifizierungs-Header setzen
                     },
+                    onUploadProgress: (progressEvent) => {
+                        const progress = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+                        setUploadProgress(progress);
+                        console.log("Upload-Fortschritt:", progress);
+                    }
                 }
             );
-
-            // Neue Datei zur Liste hinzufügen
-            setFiles((prevFiles) => [...prevFiles, response.data]);
+            console.log("API-Antwort:", response.data);
+            fetchFiles(); // Dateien neu abrufen
         } catch (error) {
-            console.error('Fehler beim Hochladen der Datei:', error);
+            console.error("Upload-Fehler:", error);
         }
     };
-
-    // Klassenzimmer-Daten beim ersten Rendern abrufen
+    
+    const fetchFiles = useCallback(async () => {
+        if (!classroomId) {
+            console.error("Keine Classroom-ID gefunden!");
+            return;
+        }
+    
+        const token = localStorage.getItem('authToken'); // Token aus LocalStorage abrufen
+        if (!token) {
+            console.error("Kein Authentifizierungs-Token gefunden!");
+            return;
+        }
+    
+        try {
+            const response = await axios.get(`http://localhost:5000/api/classrooms/${classroomId}/files`, {
+                headers: {
+                    'Authorization': `Bearer ${token}` // Authentifizierungs-Header hinzufügen
+                }
+            });
+            console.log("Dateien vom Server:", response.data);
+            setFiles(response.data);
+        } catch (error) {
+            console.error("Fehler beim Abrufen der Dateien:", error);
+        }
+    }, [classroomId]);
+    
     useEffect(() => {
-        const fetchClassroomData = async () => {
-            try {
-                const response = await axios.get(`/classrooms/${classroomId}/data`, {
-                    headers: { Authorization: `Bearer ${token}` },
-                });
-                setMessages(response.data.messages); // Nachrichten setzen
-            } catch (error) {
-                console.error('Fehler beim Abrufen der Klassenzimmer-Daten:', error);
-            }
-        };
-
-        fetchClassroomData();
         fetchFiles();
-    }, [classroomId, token]);
+    }, [classroomId, fetchFiles]);
+    
 
     return (
         <div>
-            <h1>Klassenzimmer: {classroomData?.name || 'Unbekannt'}</h1>
-
-            <div>
-                <h2>Dateien</h2>
-                <input type="file" onChange={handleUploadFile} />
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '20px' }}>
-                    {files.map((file) => (
-                        <div key={file.id} style={{ border: '1px solid #ccc', padding: '10px' }}>
-                            {file.type.startsWith('image') ? (
-                                <img
-                                    src={`/uploads/${file.path}`}
-                                    alt={file.name}
-                                    style={{ maxWidth: '300px', height: 'auto' }}
-                                />
-                            ) : file.type === 'application/pdf' ? (
-                                <embed
-    src={`/uploads/${file.path}`}
-    type="application/pdf"
-    width="100%"
-    height="600px" // Höhe anpassen, je nach gewünschtem Layout
-    style={{ border: '1px solid #ccc', margin: '10px 0' }}
-/>
-                            ) : (
-                                <a href={`/uploads/${file.path}`} target="_blank" rel="noopener noreferrer">
-                                    {file.name}
-                                </a>
-                            )}
-                        </div>
-                    ))}
-                </div>
-            </div>
+            <h2>Datei-Upload</h2>
+            <input type="file" onChange={handleFileChange} />
+            <button onClick={handleUpload}>Hochladen</button>
+            {uploadProgress > 0 && <p>Fortschritt: {uploadProgress}%</p>}
+            <ul>
+                {files.map((file) => (
+                    <li key={file.id}>
+                        <a href={`/api/classrooms/${classroomId}/files/${file.id}`} target="_blank" rel="noreferrer">
+                            {file.name}
+                        </a>
+                    </li>
+                ))}
+            </ul>
         </div>
     );
 };
 
-export default Classroom;
+export default FileUpload;

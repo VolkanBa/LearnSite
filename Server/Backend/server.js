@@ -1,3 +1,5 @@
+// yarn start || npm start
+
 const express = require('express');
 const cors = require('cors');
 const app = express();
@@ -65,3 +67,6 @@ app.use('/api/classrooms', authMiddleware);
 app.use('/api', userRoutes); // Präfix für die Routen
 
 
+app.post('/test', (req, res) => {
+  res.send('POST-Route wurde aufgerufen!');
+});

@@ -10,6 +10,8 @@ import Classroom from './pages/classroom.js';
 import { ClassroomProvider } from './pages/context.js';
 
 
+// yarn || npm start
+
 const PrivateRoute = ({ children }) => {
    // Prüfen, ob das JWT-Token existiert
    const isAuthenticated = !!localStorage.getItem('authToken'); 

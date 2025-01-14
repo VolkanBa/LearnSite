@@ -29,6 +29,6 @@ router.post('/:classroomId/upload', authMiddleware, upload.single('file'), uploa
 router.get('/:classroomId/files', authMiddleware, getFiles);
 
 // Route zum Abrufen einer spezifischen Datei
-router.get('/file/:fileId', authMiddleware, getFileData);
+router.get('/:classroomId/files/:fileId', authMiddleware, getFileData);
 
 module.exports = router;

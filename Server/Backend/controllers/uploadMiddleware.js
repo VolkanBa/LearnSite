@@ -4,7 +4,7 @@ const path = require('path');
 // Speicherort und Dateiname für hochgeladene Dateien konfigurieren
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
-        cb(null, 'uploads/'); // Speicherort für hochgeladene Dateien
+        cb(null, 'D:/LearnSite/Server/Backend/uploads'); // Speicherort für hochgeladene Dateien
     },
     filename: (req, file, cb) => {
         const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);

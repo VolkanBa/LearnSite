@@ -135,12 +135,30 @@ const Classroom = () => {
                                         {category.files.map((file) => (
                                             <li key={file.id}>
                                            <a
-                                                href={`http://localhost:5000/api/classrooms/${classroomId}/files/${file.id}?token=${localStorage.getItem('authToken')}`}
-                                                target="_blank"
-                                                rel="noreferrer"
-                                            >
-                                                {file.name}
-                                            </a>
+                                            key={file.id}
+                                            href={`http://localhost:5000/api/classrooms/${classroomId}/files/${file.id}`}
+                                            target="_blank"
+                                            rel="noreferrer"
+                                            onClick={(e) => {
+                                                e.preventDefault(); // Verhindert den Standard-Link-Aufruf
+                                                const token = localStorage.getItem('authToken');
+                                                fetch(`http://localhost:5000/api/classrooms/${classroomId}/files/${file.id}`, {
+                                                    headers: { Authorization: `Bearer ${token}` },
+                                                })
+                                                    .then((response) => response.blob())
+                                                    .then((blob) => {
+                                                        const url = window.URL.createObjectURL(blob);
+                                                        const link = document.createElement('a');
+                                                        link.href = url;
+                                                        link.setAttribute('download', file.name);
+                                                        document.body.appendChild(link);
+                                                        link.click();
+                                                        link.remove();
+                                                    });
+                                            }}
+                                        >
+                                            {file.name}
+                                        </a>
                                             </li>
                                         ))}
                                     </ul>

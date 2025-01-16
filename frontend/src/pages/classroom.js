@@ -1,142 +1,185 @@
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom'; 
 import axios from 'axios';
-import { Worker, Viewer } from '@react-pdf-viewer/core';
-import '@react-pdf-viewer/core/lib/styles/index.css';
-import { GlobalWorkerOptions } from 'pdfjs-dist';
+import { useParams } from 'react-router-dom';
 
-GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js`;
+const Classroom = () => {
+    const { classroomId } = useParams();
+    const [categories, setCategories] = useState([]);
+    const [role, setRole] = useState(null); // Rolle des Nutzers
+    const [newCategoryName, setNewCategoryName] = useState('');
+    const [newCategoryDescription, setNewCategoryDescription] = useState('');
+    const [error, setError] = useState('');
+    const [loading, setLoading] = useState(true);
 
-
-const FileUploadAndViewer = () => {
-    const {classroomId} = useParams();
-    const [selectedFile, setSelectedFile] = useState(null);
-    const [uploadProgress, setUploadProgress] = useState(0);
-    const [files, setFiles] = useState([]);
-    const [selectedFileUrl, setSelectedFileUrl] = useState(null);
-
-    // Dateien abrufen
+    // Prüfen der Rolle
     useEffect(() => {
-        const fetchFiles = async () => {
+        const checkRole = async () => {
             const token = localStorage.getItem('authToken');
             try {
-                const response = await axios.get(`http://localhost:5000/api/classrooms/${classroomId}/files`, {
-                    headers: { Authorization: `Bearer ${token}` },
-                });
-                setFiles(response.data);
+                const response = await axios.get(
+                    `http://localhost:5000/api/classrooms/${classroomId}/role`,
+                    { headers: { Authorization: `Bearer ${token}` } }
+                );
+                setRole(response.data.role); // Rolle wird gesetzt (creator oder user)
             } catch (error) {
-                console.error('Fehler beim Abrufen der Dateien:', error);
+                console.error('Fehler beim Überprüfen der Rolle:', error);
+                setError('Fehler beim Überprüfen der Rolle');
             }
         };
 
-        fetchFiles();
+        checkRole();
     }, [classroomId]);
 
-    const handleFileChange = (event) => {
-        setSelectedFile(event.target.files[0]);
-    };
+    // Kategorien abrufen
+    useEffect(() => {
+        const fetchCategories = async () => {
+            const token = localStorage.getItem('authToken');
+            try {
+                const response = await axios.get(
+                    `http://localhost:5000/api/classrooms/${classroomId}/categories`,
+                    {
+                        headers: { Authorization: `Bearer ${token}` },
+                    }
+                );
+    
+                const categoriesWithFiles = await Promise.all(
+                    response.data.map(async (category) => {
+                        const filesResponse = await axios.get(
+                            `http://localhost:5000/api/classrooms/${classroomId}/categories/${category.id}/files`,
+                            {
+                                headers: { Authorization: `Bearer ${token}` },
+                            }
+                        );
+                        return { ...category, files: filesResponse.data };
+                    })
+                );
+    
+                setCategories(categoriesWithFiles);
+            } catch (error) {
+                console.error('Fehler beim Abrufen der Kategorien:', error);
+                setError('Fehler beim Abrufen der Kategorien');
+            } finally {
+                setLoading(false); // Ladeanzeige beenden
+            }
+        };
+    
+        fetchCategories();
+    }, [classroomId]);
+    
 
-    const handleUpload = async () => {
-        if (!selectedFile) {
-            alert('Bitte wählen Sie eine Datei aus.');
+    // Neue Kategorie hinzufügen
+    const handleAddCategory = async () => {
+        const token = localStorage.getItem('authToken');
+        if (!newCategoryName || !newCategoryDescription) {
+            setError('Bitte alle Felder ausfüllen.');
             return;
         }
-
-        const formData = new FormData();
-        formData.append('file', selectedFile);
-
-        const token = localStorage.getItem('authToken');
-
+    
         try {
             const response = await axios.post(
-                `http://localhost:5000/api/classrooms/${classroomId}/upload`,
+                `http://localhost:5000/api/classrooms/${classroomId}/categories`,
+                { name: newCategoryName, description: newCategoryDescription },
+                { headers: { Authorization: `Bearer ${token}` } }
+            );
+    
+            // Neue Kategorie mit einem leeren files-Array hinzufügen
+            const newCategory = { ...response.data, files: [] };
+            setCategories([...categories, newCategory]);
+            setNewCategoryName('');
+            setNewCategoryDescription('');
+            setError(''); // Fehler zurücksetzen
+        } catch (error) {
+            console.error('Fehler beim Hinzufügen der Kategorie:', error);
+            setError('Fehler beim Hinzufügen der Kategorie');
+        }
+    };
+    
+    // Datei hochladen
+    const handleFileUpload = async (file, categoryId) => {
+        const token = localStorage.getItem('authToken');
+        const formData = new FormData();
+        formData.append('file', file);
+    
+        try {
+            const response = await axios.post(
+                `http://localhost:5000/api/classrooms/${classroomId}/categories/${categoryId}/files`,
                 formData,
                 {
                     headers: {
                         Authorization: `Bearer ${token}`,
                         'Content-Type': 'multipart/form-data',
                     },
-                    onUploadProgress: (progressEvent) => {
-                        const progress = Math.round((progressEvent.loaded * 100) / progressEvent.total);
-                        setUploadProgress(progress);
-                    },
                 }
             );
-            setFiles([...files, response.data]);
-            setUploadProgress(0);
-            setSelectedFile(null);
+            console.log('Datei hochgeladen:', response.data);
         } catch (error) {
             console.error('Fehler beim Hochladen der Datei:', error);
         }
     };
 
-    const handleFileClick = async (fileId) => {
-        const token = localStorage.getItem('authToken');
-    
-        try {
-            const response = await axios.get(
-                `http://localhost:5000/api/classrooms/${classroomId}/files/${fileId}`,
-                {
-                    headers: {
-                        Authorization: `Bearer ${token}`, // Token im Header senden
-                    },
-                    responseType: 'blob', // Datei als Blob abrufen
-                }
-            );
-    
-            // Blob-URL generieren und setzen
-            const fileUrl = URL.createObjectURL(response.data);
-            setSelectedFileUrl(fileUrl);
-        } catch (error) {
-            console.error('Fehler beim Abrufen der Datei:', error);
-        }
-    };
-
     return (
-        <div style={{ padding: '20px', fontFamily: 'Arial, sans-serif' }}>
-            <h1>Datei-Upload und Vorschau</h1>
-            <div style={{ marginBottom: '20px' }}>
-                <input type="file" onChange={handleFileChange} />
-                <button onClick={handleUpload} style={{ marginLeft: '10px', padding: '5px 10px' }}>
-                    Hochladen
-                </button>
-                {uploadProgress > 0 && <p>Upload-Fortschritt: {uploadProgress}%</p>}
-            </div>
-
-            <div>
-                <h2>Hochgeladene Dateien</h2>
-                <ul style={{ listStyle: 'none', padding: 0 }}>
-                    {files.map((file) => (
-                        <li key={file.id} style={{ marginBottom: '10px' }}>
-                            <button
-                                onClick={() => handleFileClick(file.id)}
-                                style={{
-                                    padding: '5px 10px',
-                                    backgroundColor: '#007BFF',
-                                    color: 'white',
-                                    border: 'none',
-                                    borderRadius: '5px',
-                                    cursor: 'pointer',
-                                }}
-                            >
-                                {file.name}
-                            </button>
-                        </li>
+        <div>
+            <h1>Lernpfad im Classroom</h1>
+            {error && <p style={{ color: 'red' }}>{error}</p>}
+            {loading ? (
+                <p>Lädt...</p>
+            ) : (
+                <div>
+                    {categories.map((category) => (
+                        <div key={category.id} className="category">
+                            <h3>{category.name}</h3>
+                            <p>{category.description}</p>
+                            <div>
+                                {category.files && category.files.length > 0 ? (
+                                    <ul>
+                                        {category.files.map((file) => (
+                                            <li key={file.id}>
+                                           <a
+                                                href={`http://localhost:5000/api/classrooms/${classroomId}/files/${file.id}?token=${localStorage.getItem('authToken')}`}
+                                                target="_blank"
+                                                rel="noreferrer"
+                                            >
+                                                {file.name}
+                                            </a>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                ) : (
+                                    <p>Keine Dateien vorhanden</p>
+                                )}
+                            </div>
+                            {role === 'creator' && (
+                                <div>
+                                    <h4>Datei hochladen</h4>
+                                    <input
+                                        type="file"
+                                        onChange={(e) => handleFileUpload(e.target.files[0], category.id)}
+                                    />
+                                </div>
+                            )}
+                        </div>
                     ))}
-                </ul>
-            </div>
-
-            <div>
-                {selectedFileUrl && (
-                    <div style={{ border: '1px solid black', width: '80%', height: '600px', margin: '20px auto' }}>
-                        <Worker workerUrl="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js">
-                            <Viewer fileUrl={selectedFileUrl} />
-                        </Worker>
-                    </div>
-                )}
-            </div>
+                    {role === 'creator' && (
+                        <div>
+                            <h3>Neue Kategorie hinzufügen</h3>
+                            <input
+                                type="text"
+                                placeholder="Name der Kategorie"
+                                value={newCategoryName}
+                                onChange={(e) => setNewCategoryName(e.target.value)}
+                            />
+                            <textarea
+                                placeholder="Beschreibung der Kategorie"
+                                value={newCategoryDescription}
+                                onChange={(e) => setNewCategoryDescription(e.target.value)}
+                            />
+                            <button onClick={handleAddCategory}>Kategorie hinzufügen</button>
+                        </div>
+                    )}
+                </div>
+            )}
         </div>
     );
 };
 
-export default FileUploadAndViewer;
+export default Classroom;

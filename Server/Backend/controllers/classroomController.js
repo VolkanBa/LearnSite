@@ -321,3 +321,48 @@ exports.getFileData = async (req, res) => {
         res.status(500).json({ error: 'Interner Serverfehler.' });
     }
 };
+
+exports.createCategory = async (req, res) => {
+    const { name, description } = req.body;
+    const { classroomId } = req.params;
+
+    try {
+        // Kategorie in der Datenbank erstellen
+        const [result] = await db.query(
+            'INSERT INTO categories (name, description, classroom_id) VALUES (?, ?, ?)',
+            [name, description, classroomId]
+        );
+
+        // Neue Kategorie-ID abrufen
+        const newCategoryId = result.insertId; // `insertId` gibt die ID der neu erstellten Zeile zurück
+
+        // Antwort an den Client senden
+        res.status(201).json({ id: newCategoryId, name, description });
+    } catch (error) {
+        console.error('Fehler beim Erstellen der Kategorie:', error);
+
+        // Fehler an den Client senden (nur einmal!)
+        res.status(500).json({ error: 'Fehler beim Erstellen der Kategorie' });
+    }
+};
+
+exports.checkUserRole = async (req, res) => {
+    const { classroomId } = req.params;
+    const userId = req.user.id;
+
+    try {
+        const [result] = await db.query(
+            'SELECT role FROM classroom_users WHERE classroom_id = ? AND user_id = ?',
+            [classroomId, userId]
+        );
+
+        if (result.length === 0) {
+            return res.status(404).json({ message: 'Benutzerrolle nicht gefunden' });
+        }
+
+        res.status(200).json({ role: result[0].role });
+    } catch (error) {
+        console.error('Fehler beim Überprüfen der Rolle:', error);
+        res.status(500).json({ error: 'Interner Serverfehler' });
+    }
+};

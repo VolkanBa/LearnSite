@@ -6,6 +6,10 @@ const { createClassroom, getClassrooms, removeUserFromClassroom, uploadFile, get
 const authMiddleware = require('../controllers/middelware.js');
 const upload = require('../controllers/uploadMiddleware.js')
 const { getClassroomData, sendMessage } = require('../controllers/classroomController.js');
+const { createCategory, getCategories, updateCategory } = require('../controllers/categoryController');
+const { uploadFileToCategory, getFilesInCategory, getFile, downloadFile } = require('../controllers/fileController');
+const {checkUserRole} = require('../controllers/classroomController.js')
+
 
 
 // GET /api/classrooms - gets all classrooms of the user
@@ -30,5 +34,17 @@ router.get('/:classroomId/files', authMiddleware, getFiles);
 
 // Route zum Abrufen einer spezifischen Datei
 router.get('/:classroomId/files/:fileId', authMiddleware, getFileData);
+router.get('/:classroomId/files/:fileId', authMiddleware, getFile);
+
+// Kategorien-Endpunkte
+router.post('/:classroomId/categories', authMiddleware, createCategory);
+router.get('/:classroomId/categories', authMiddleware, getCategories);
+router.patch('/:classroomId/categories/:categoryId', authMiddleware, updateCategory);
+
+// Dateien in Kategorien
+router.post('/:classroomId/categories/:categoryId/files', authMiddleware, upload.single('file'), uploadFileToCategory);
+router.get('/:classroomId/categories/:categoryId/files', authMiddleware, getFilesInCategory);
+router.get('/:classroomId/role', authMiddleware, checkUserRole);
+router.get('/:classroomId/files/:fileId', authMiddleware, downloadFile);
 
 module.exports = router;
